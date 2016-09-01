@@ -3,7 +3,7 @@ import assign from "lodash/assign";
 export const State = function () {
 	let state = {};
 	let actions = {};
-	let middlewears = [];
+	let middlewares = [];
 
 	let newState = function (stateOverride) {
 		if (stateOverride) {
@@ -27,7 +27,10 @@ export const State = function () {
 
 	newState.subscribe = function (callback) {};
 
-	newState.middlewares = function (middlewares) {};
+	newState.middlewares = function (...newMiddlewares) {
+		if (newMiddlewares.length == 0) return middlewares;
+		middlewares = middlewares.concat(newMiddlewares);
+	};
 
 	return newState;
 };

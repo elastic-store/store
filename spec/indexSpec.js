@@ -96,6 +96,29 @@ describe("state", () => {
 
 	describe("subscribe", () => {});
 
-	describe("middlewares", () => {
+	describe("middleware", () => {
+		let state;
+
+		beforeEach(() => {
+			state = State();
+		});
+		
+		it("gets/sets middlewares", () => {
+			let mid1 = function () {};
+			state.middlewares(mid1);
+
+			expect(state.middlewares()).to.eql([mid1]);
+		});
+
+		it("appends middlewares", () => {
+			let mid1 = function () {};
+			state.middlewares(mid1);
+
+			let mid2 = function () {};
+			let mid3 = function () {};
+			state.middlewares(mid2, mid3);
+
+			expect(state.middlewares()).to.eql([mid1, mid2, mid3]);
+		});
 	});
 });

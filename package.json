@@ -39,8 +39,5 @@
     "chai": "^3.5.0",
     "mocha": "^2.5.3",
     "webpack": "^1.12.14"
-  },
-  "dependencies": {
-    "lodash": "^4.15.0"
   }
 }
