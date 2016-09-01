@@ -22,7 +22,11 @@ export const State = function () {
 		let frags = path.split(".");
 		let action = actions[frags[0]][frags[1]];
 
-		state[frags[0]] = action(state[frags[0]], data)
+		let finalAction = middlewares.reduceRight((action, middleware) => {
+			return middleware(action);
+		}, action);
+
+		state[frags[0]] = finalAction(state[frags[0]], data, path)
 	};
 
 	newState.subscribe = function (callback) {};

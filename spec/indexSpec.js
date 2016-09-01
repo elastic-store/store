@@ -92,6 +92,52 @@ describe("state", () => {
 			state.apply("todos.add", "Go to mars.")
 			expect(state().todos).to.eql(["Go to mars."]);
 		});
+
+		it("applies midlewares", () => {
+			let mid1BeforeLog;
+			let mid1AfterLog;
+			let mid1 = (action) => {
+				return (previousState, data, path) => {
+					mid1BeforeLog = [previousState, data, path];
+
+					let newState = action(previousState, data, path);
+
+					mid1AfterLog = newState;
+
+					return newState;
+				};
+			};
+
+			let mid2BeforeLog;
+			let mid2AfterLog;
+			let mid2 = (action) => {
+				return (previousState, data, path) => {
+					mid2BeforeLog = [previousState, data, path];
+
+					let newState = action(previousState, data, path);
+
+					mid2AfterLog = newState;
+
+					return newState;
+				};
+			};
+
+			let todosActions = {
+				add (todos = [], atodo) {
+					return todos.concat(atodo);
+				}
+			};
+
+			state.middlewares(mid1, mid2);
+			state.actions({todos: todosActions});
+			state.apply("todos.add", "Pass this test.");
+
+			expect(mid1BeforeLog).to.eql([undefined, "Pass this test.", "todos.add"]);
+			expect(mid1AfterLog).to.eql(["Pass this test."]);
+
+			expect(mid2BeforeLog).to.eql([undefined, "Pass this test.", "todos.add"]);
+			expect(mid2AfterLog).to.eql(["Pass this test."]);
+		});
 	});
 
 	describe("subscribe", () => {});
