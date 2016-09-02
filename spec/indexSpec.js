@@ -108,11 +108,11 @@ describe("state", () => {
 		it("applies midlewares", () => {
 			let mid1BeforeLog;
 			let mid1AfterLog;
-			let mid1 = (action) => {
-				return (previousState, data, path) => {
-					mid1BeforeLog = [previousState, data, path];
+			let mid1 = (path, action) => {
+				return (previousState, payload) => {
+					mid1BeforeLog = [previousState, payload, path];
 
-					let newState = action(previousState, data, path);
+					let newState = action(previousState, payload);
 
 					mid1AfterLog = newState;
 
@@ -122,11 +122,11 @@ describe("state", () => {
 
 			let mid2BeforeLog;
 			let mid2AfterLog;
-			let mid2 = (action) => {
-				return (previousState, data, path) => {
-					mid2BeforeLog = [previousState, data, path];
+			let mid2 = (path, action) => {
+				return (previousState, payload) => {
+					mid2BeforeLog = [previousState, payload, path];
 
-					let newState = action(previousState, data, path);
+					let newState = action(previousState, payload);
 
 					mid2AfterLog = newState;
 

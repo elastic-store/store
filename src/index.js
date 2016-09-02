@@ -18,15 +18,15 @@ export const State = function () {
 		assign(actions, newActions);
 	};
 
-	newState.apply = function (path, data) {
+	newState.apply = function (path, payload) {
 		let frags = path.split(".");
 		let action = actions[frags[0]][frags[1]];
 
 		let finalAction = middlewares.reduceRight((action, middleware) => {
-			return middleware(action);
+			return middleware(path, action);
 		}, action);
 
-		state[frags[0]] = finalAction(state[frags[0]], data, path)
+		state[frags[0]] = finalAction(state[frags[0]], payload)
 	};
 
 	newState.subscribe = function (callback) {};
