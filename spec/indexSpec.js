@@ -28,9 +28,21 @@ describe("state", () => {
 		expect(astate.subscribe).to.exist;
 	});
 
-	it("has 'middlewares' method.", () => {
+	it("has 'addMiddlewares' method.", () => {
 		let astate = State();
-		expect(astate.middlewares).to.exist;
+		expect(astate.addMiddlewares).to.exist;
+	});
+
+
+	it("has 'removeMiddlewares' method.", () => {
+		let astate = State();
+		expect(astate.removeMiddlewares).to.exist;
+	});
+
+
+	it("has 'getMiddlewares' method.", () => {
+		let astate = State();
+		expect(astate.getMiddlewares).to.exist;
 	});
 
 	it("accepts 'keepHistory'");
@@ -128,7 +140,7 @@ describe("state", () => {
 				}
 			};
 
-			state.middlewares(mid1, mid2);
+			state.addMiddlewares(mid1, mid2);
 			state.actions({todos: todosActions});
 			state.apply("todos.add", "Pass this test.");
 
@@ -142,29 +154,39 @@ describe("state", () => {
 
 	describe("subscribe", () => {});
 
-	describe("middleware", () => {
-		let state;
-
-		beforeEach(() => {
-			state = State();
+	describe("getMiddlewares", () => {
+		it("returns all the middlewares acting on a state", () => {
+			let state = State();
+			let mid1 = () => {};
+			state.addMiddlewares(mid1);
+			expect(state.getMiddlewares()).to.eql([mid1]);
 		});
-		
-		it("gets/sets middlewares", () => {
-			let mid1 = function () {};
-			state.middlewares(mid1);
+	});
 
-			expect(state.middlewares()).to.eql([mid1]);
+	describe("addMiddlewares", () => {
+		it("adds middlewares", () => {
+			let state = State();
+			let mid1 = () => {};
+			let mid2 = () => {};
+			state.addMiddlewares(mid1, mid2);
+
+			expect(state.getMiddlewares()).to.eql([mid1, mid2]);
 		});
+	});
 
-		it("appends middlewares", () => {
-			let mid1 = function () {};
-			state.middlewares(mid1);
+	describe("removeMiddlewares", () => {
+		it("removes middlewares", () => {
+			let state = State();
+			let mid1 = () => {};
+			let mid2 = () => {};
+			let mid3 = () => {};
+			state.addMiddlewares(mid1, mid2, mid3);
 
-			let mid2 = function () {};
-			let mid3 = function () {};
-			state.middlewares(mid2, mid3);
+			state.removeMiddlewares(mid1);
+			expect(state.getMiddlewares()).to.eql([mid2, mid3]);
 
-			expect(state.middlewares()).to.eql([mid1, mid2, mid3]);
+			state.removeMiddlewares(mid2, mid3);
+			expect(state.getMiddlewares()).to.eql([]);
 		});
 	});
 });

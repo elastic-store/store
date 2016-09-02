@@ -31,9 +31,18 @@ export const State = function () {
 
 	newState.subscribe = function (callback) {};
 
-	newState.middlewares = function (...newMiddlewares) {
-		if (newMiddlewares.length == 0) return middlewares;
-		middlewares = middlewares.concat(newMiddlewares);
+	newState.addMiddlewares = (...newMiddleware) => {
+		middlewares = middlewares.concat(newMiddleware);
+	};
+
+	newState.removeMiddlewares = (...toRemove) => {
+		middlewares = middlewares.filter((mid) => {
+			return toRemove.indexOf(mid) < 0;
+		});
+	};
+
+	newState.getMiddlewares = () => {
+		return middlewares;
 	};
 
 	return newState;
