@@ -39,5 +39,8 @@
     "chai": "^3.5.0",
     "mocha": "^2.5.3",
     "webpack": "^1.12.14"
+  },
+  "dependencies": {
+    "babel-plugin-transform-object-assign": "^6.8.0"
   }
 }

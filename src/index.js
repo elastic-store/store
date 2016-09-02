@@ -1,5 +1,3 @@
-import assign from "lodash/assign";
-
 export const State = function () {
 	let state = {};
 	let actions = {};
@@ -7,7 +5,7 @@ export const State = function () {
 
 	let newState = function (stateOverride) {
 		if (stateOverride) {
-			assign(state, stateOverride);
+			Object.assign(state, stateOverride);
 		}
 
 		return state;	
@@ -15,12 +13,21 @@ export const State = function () {
 
 	newState.actions = function (newActions) {
 		if (!newActions) return actions;
-		assign(actions, newActions);
+		Object.assign(actions, newActions);
 	};
 
 	newState.apply = function (path, payload) {
 		let frags = path.split(".");
-		let action = actions[frags[0]][frags[1]];
+
+		let action;
+		try {
+			action = actions[frags[0]][frags[1]];
+		}
+		catch (err) {
+			if (err instanceof TypeError) {
+				throw Error(`Could not find action associated with path '${path}'.`);
+			}
+		}
 
 		let finalAction = middlewares.reduceRight((action, middleware) => {
 			return middleware(path, action);

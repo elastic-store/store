@@ -1,6 +1,5 @@
 import {State} from "./../src/index.js";
 import {expect} from "chai";
-import concat from "lodash/concat";
 
 
 describe("state", () => {
@@ -84,6 +83,10 @@ describe("state", () => {
 			expect(gotActions.todos).to.eql(newActions);
 			expect(gotActions.x).to.eql(actions.x);
 		});
+
+		it("throws on invalid action path", () => {
+			expect(astate.apply.bind(astate, "invalid.path")).to.throw(Error);
+		});
 	});
 
 	describe("apply", () => {
@@ -96,7 +99,7 @@ describe("state", () => {
 		it("applies action at specified path to state associated with it.", () => {
 			let todosActions = {
 				add (todos = [], atodo) {
-					return concat(todos, atodo);
+					return todos.concat(atodo);
 				}
 			};
 
