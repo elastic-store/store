@@ -33,6 +33,10 @@ export const State = function () {
 
 	newState.addMiddleware = (desiredPath, middleware) => {
 		let pathAwareMiddleware = (appliedPath, action) => {
+			if (typeof desiredPath === "function") {
+				return desiredPath(appliedPath, action);
+			}
+
 			if (appliedPath.indexOf(desiredPath) === 0) {
 				return middleware(appliedPath, action);
 			}

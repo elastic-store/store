@@ -183,7 +183,7 @@ describe("state", () => {
 
 			let returnVal;
 			// "" - global
-			let globalMiddleware = state.addMiddleware("", middleware);
+			let globalMiddleware = state.addMiddleware(middleware);
 			expect(globalMiddleware).to.exist;
 
 			returnVal = globalMiddleware("todos", action)("previousState", "payload");
