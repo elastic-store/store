@@ -29,11 +29,16 @@ export const State = function () {
 			}
 		}
 
+		let wrappedState = (preState, payload) => {
+			state[frags[0]] = action(preState, payload);
+			return state;
+		};
+
 		let finalAction = middlewares.reduceRight((action, middleware) => {
 			return middleware(path, action);
-		}, action);
+		}, wrappedState);
 
-		state[frags[0]] = finalAction(state[frags[0]], payload)
+		return finalAction(state[frags[0]], payload)
 	};
 
 	newState.subscribe = function (callback) {};
