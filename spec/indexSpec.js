@@ -28,15 +28,15 @@ describe("state", () => {
 		expect(astate.subscribe).to.exist;
 	});
 
-	it("has 'addMiddlewares' method.", () => {
+	it("has 'addMiddleware' method.", () => {
 		let astate = State();
-		expect(astate.addMiddlewares).to.exist;
+		expect(astate.addMiddleware).to.exist;
 	});
 
 
-	it("has 'removeMiddlewares' method.", () => {
+	it("has 'removeMiddleware' method.", () => {
 		let astate = State();
-		expect(astate.removeMiddlewares).to.exist;
+		expect(astate.removeMiddleware).to.exist;
 	});
 
 
@@ -140,7 +140,8 @@ describe("state", () => {
 				}
 			};
 
-			state.addMiddlewares(mid1, mid2);
+			state.addMiddleware("", mid1);
+			state.addMiddleware("", mid2);
 			state.actions({todos: todosActions});
 			state.apply("todos.add", "Pass this test.");
 
@@ -158,34 +159,76 @@ describe("state", () => {
 		it("returns all the middlewares acting on a state", () => {
 			let state = State();
 			let mid1 = () => {};
-			state.addMiddlewares(mid1);
-			expect(state.getMiddlewares()).to.eql([mid1]);
+
+			// extended middleware
+			let mid1x = state.addMiddleware("", mid1);
+			expect(state.getMiddlewares()).to.eql([mid1x]);
 		});
 	});
 
-	describe("addMiddlewares", () => {
-		it("adds middlewares", () => {
+	describe("addMiddleware", () => {
+		it("adds a middleware which acts on specific path.", () => {
 			let state = State();
-			let mid1 = () => {};
-			let mid2 = () => {};
-			state.addMiddlewares(mid1, mid2);
 
-			expect(state.getMiddlewares()).to.eql([mid1, mid2]);
+			let middlewareLog;
+			let middleware = (path, action) => {
+				return (previousState, payload) => {
+					middlewareLog = [path, previousState, payload];
+					return action(previousState, payload);
+				};
+			};
+			let action = (previousState, payload) => {
+				return [previousState, payload];
+			};
+
+			let returnVal;
+			// "" - global
+			let globalMiddleware = state.addMiddleware("", middleware);
+			expect(globalMiddleware).to.exist;
+
+			returnVal = globalMiddleware("todos", action)("previousState", "payload");
+			expect(middlewareLog).to.eql(["todos", "previousState", "payload"]);
+			expect(returnVal).to.eql(["previousState", "payload"]);
+
+			// "key"
+			let todoMiddleware = state.addMiddleware("todos", middleware);
+			expect(todoMiddleware).to.exist;
+
+			returnVal = todoMiddleware("todos.remove", action)("previousState", "payload");
+			expect(middlewareLog).to.eql(["todos.remove", "previousState", "payload"]);
+			expect(returnVal).to.eql(["previousState", "payload"]);
+
+			middlewareLog = [];
+			returnVal = todoMiddleware("todos.add", action)("previousState", "payload");
+			expect(middlewareLog).to.eql(["todos.add", "previousState", "payload"]);
+			expect(returnVal).to.eql(["previousState", "payload"]);
+
+			// "key.action"
+			let todosAddMiddleware = state.addMiddleware("todos.add", middleware);
+			expect(todoMiddleware).to.exist;
+
+			returnVal = todosAddMiddleware("todos.add", action)("previousState", "payload");
+			expect(middlewareLog).to.eql(["todos.add", "previousState", "payload"]);
+			expect(returnVal).to.eql(["previousState", "payload"]);
 		});
 	});
 
-	describe("removeMiddlewares", () => {
-		it("removes middlewares", () => {
+	describe("removeMiddleware", () => {
+		it("removes a middleware", () => {
 			let state = State();
 			let mid1 = () => {};
 			let mid2 = () => {};
 			let mid3 = () => {};
-			state.addMiddlewares(mid1, mid2, mid3);
 
-			state.removeMiddlewares(mid1);
-			expect(state.getMiddlewares()).to.eql([mid2, mid3]);
+			let mid1x = state.addMiddleware("", mid1);
+			let mid2x = state.addMiddleware("", mid2);
+			let mid3x = state.addMiddleware("", mid3);
 
-			state.removeMiddlewares(mid2, mid3);
+			state.removeMiddleware(mid1x);
+			expect(state.getMiddlewares()).to.eql([mid2x, mid3x]);
+
+			state.removeMiddleware(mid2x);
+			state.removeMiddleware(mid3x);
 			expect(state.getMiddlewares()).to.eql([]);
 		});
 	});

@@ -31,13 +31,23 @@ export const State = function () {
 
 	newState.subscribe = function (callback) {};
 
-	newState.addMiddlewares = (...newMiddleware) => {
-		middlewares = middlewares.concat(newMiddleware);
+	newState.addMiddleware = (desiredPath, middleware) => {
+		let pathAwareMiddleware = (appliedPath, action) => {
+			if (appliedPath.indexOf(desiredPath) === 0) {
+				return middleware(appliedPath, action);
+			}
+
+			return action;
+		};
+
+		middlewares =  middlewares.concat(pathAwareMiddleware);
+
+		return pathAwareMiddleware;
 	};
 
-	newState.removeMiddlewares = (...toRemove) => {
+	newState.removeMiddleware = (toRemove) => {
 		middlewares = middlewares.filter((mid) => {
-			return toRemove.indexOf(mid) < 0;
+			return mid !== toRemove;
 		});
 	};
 
