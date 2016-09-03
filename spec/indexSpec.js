@@ -148,7 +148,6 @@ describe("Store", () => {
 			expect(mid2AfterLog).to.eql({todos: ["Pass this test."]});
 		});
 
-
 		it("throws on invalid action path", () => {
 			expect(astore.dispatch.bind(astore, "invalid.path")).to.throw(Error);
 		});

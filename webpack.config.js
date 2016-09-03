@@ -6,8 +6,8 @@ module.exports = {
   entry: './index.js',
   output: {
     path: __dirname + '/dist/',
-    filename: 'easystate.min.js',
-    library: 'easystate',
+    filename: 'store.min.js',
+    library: 'Store',
     libraryTarget: 'var'
   },
   externals: {

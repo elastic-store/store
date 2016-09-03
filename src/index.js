@@ -65,7 +65,7 @@ export const Store = function (initialActions, initialMiddlewares, initialState)
 			return action;
 		};
 
-		middlewares =  middlewares.concat(pathAwareMiddleware);
+		middlewares.push(pathAwareMiddleware);
 
 		return pathAwareMiddleware;
 	};

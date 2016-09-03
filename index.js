@@ -1,1 +1,1 @@
-module.exports = require("./src/index.js").State;
+module.exports = require("./src/index.js").Store;
