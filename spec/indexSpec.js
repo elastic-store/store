@@ -1,66 +1,63 @@
-import {State} from "./../src/index.js";
+import {Store} from "./../src/index.js";
 import {expect} from "chai";
 
 
-describe("state", () => {
+describe("Store", () => {
+	it("accepts initial actions", () => {
+		let initialActions = {};
+		let astore = Store(initialActions);
+		expect(astore.action()).to.equal(initialActions);
+	});
+
+	it("accepts initial middlewares", () => {
+		let initialMiddlewares = {};
+		let astore = Store(null, initialMiddlewares);
+		expect(astore.middleware()).to.equal(initialMiddlewares);
+	});
+
+	it("accepts initial state", () => {
+		let initialState = {};
+		let astore = Store(null, null, initialState);
+		expect(astore()).to.equal(initialState);
+	});
+
 	it("is a getter/setter of state.", () => {
-		let astate = State();
+		let astore = Store();
 
 		let data = {todos: [1]};
-		astate(data);
+		astore(data);
 
-		expect(astate()).to.eql(data);
+		expect(astore()).to.eql(data);
 	})
 
-	it("has 'actions' method.", () => {
-		let astate = State();
-		expect(astate.actions).to.exist;
+	it("has 'action' method.", () => {
+		let astore = Store();
+		expect(astore.action).to.exist;
 	});
 
-	it("has 'apply' method.", () => {
-		let astate = State();
-		expect(astate.apply).to.exist;
+	it("has 'middleware' method.", () => {
+		let astore = Store();
+		expect(astore.middleware).to.exist;
 	});
 
-	it("has 'subscribe' method.", () => {
-		let astate = State();
-		expect(astate.subscribe).to.exist;
+	it("has 'dispatch' method.", () => {
+		let astore = Store();
+		expect(astore.dispatch).to.exist;
 	});
 
-	it("has 'addMiddleware' method.", () => {
-		let astate = State();
-		expect(astate.addMiddleware).to.exist;
-	});
-
-
-	it("has 'removeMiddleware' method.", () => {
-		let astate = State();
-		expect(astate.removeMiddleware).to.exist;
-	});
-
-
-	it("has 'getMiddlewares' method.", () => {
-		let astate = State();
-		expect(astate.getMiddlewares).to.exist;
-	});
-
-	it("accepts 'keepHistory'");
-
-	it("allows sub state.");
-
-	describe("actions", () => {
-		let astate;
+	describe("action", () => {
+		let astore;
 		beforeEach(() => {
-			astate = State();
+			astore = Store();
 		});
 
-		it("gets/sets actions to state.", () => {
+		it("gets/sets actions.", () => {
 			let todosAction = {
 				add () {}
 			};
 
-			astate.actions({todos: todosAction});
-			expect(astate.actions().todos).to.equal(todosAction);
+			astore.action({todos: todosAction});
+			expect(astore.action().todos).to.equal(todosAction);
 		});
 
 		it("overrides existing actions under a key", () => {
@@ -72,28 +69,24 @@ describe("state", () => {
 					xAction () {}
 				}
 			};
-			astate.actions(actions);
+			astore.action(actions);
 
 			let newActions = {
 				remove () {}
 			};
-			astate.actions({todos: newActions});
+			astore.action({todos: newActions});
 
-			let gotActions = astate.actions();
+			let gotActions = astore.action();
 			expect(gotActions.todos).to.eql(newActions);
 			expect(gotActions.x).to.eql(actions.x);
 		});
-
-		it("throws on invalid action path", () => {
-			expect(astate.apply.bind(astate, "invalid.path")).to.throw(Error);
-		});
 	});
 
-	describe("apply", () => {
-		let state;
+	describe("dispatch", () => {
+		let astore;
 
 		beforeEach(() => {
-			state = State();
+			astore = Store();
 		});
 
 		it("applies action at specified path to state associated with it.", () => {
@@ -103,9 +96,9 @@ describe("state", () => {
 				}
 			};
 
-			state.actions({todos: todosActions});
-			state.apply("todos.add", "Go to mars.")
-			expect(state().todos).to.eql(["Go to mars."]);
+			astore.action({todos: todosActions});
+			astore.dispatch("todos.add", "Go to mars.")
+			expect(astore().todos).to.eql(["Go to mars."]);
 		});
 
 		it("applies midlewares", () => {
@@ -113,7 +106,7 @@ describe("state", () => {
 			let mid1AfterLog;
 			let mid1 = (path, action) => {
 				return (previousState, payload) => {
-					mid1BeforeLog = [previousState, payload, path];
+					mid1BeforeLog = [Object.assign({}, previousState), payload, path];
 
 					let newState = action(previousState, payload);
 
@@ -127,7 +120,7 @@ describe("state", () => {
 			let mid2AfterLog;
 			let mid2 = (path, action) => {
 				return (previousState, payload) => {
-					mid2BeforeLog = [previousState, payload, path];
+					mid2BeforeLog = [Object.assign({}, previousState), payload, path];
 
 					let newState = action(previousState, payload);
 
@@ -143,36 +136,32 @@ describe("state", () => {
 				}
 			};
 
-			state.addMiddleware("", mid1);
-			state.addMiddleware("", mid2);
-			state.actions({todos: todosActions});
-			state.apply("todos.add", "Pass this test.");
+			astore.middleware("", mid1);
+			astore.middleware("", mid2);
+			astore.action({todos: todosActions});
+			astore.dispatch("todos.add", "Pass this test.");
 
-			expect(mid1BeforeLog).to.eql([undefined, "Pass this test.", "todos.add"]);
-			expect(mid1AfterLog).to.eql(["Pass this test."]);
+			expect(mid1BeforeLog).to.eql([{}, "Pass this test.", "todos.add"]);
+			expect(mid1AfterLog).to.eql({todos: ["Pass this test."]});
 
-			expect(mid2BeforeLog).to.eql([undefined, "Pass this test.", "todos.add"]);
-			expect(mid2AfterLog).to.eql(["Pass this test."]);
+			expect(mid2BeforeLog).to.eql([{}, "Pass this test.", "todos.add"]);
+			expect(mid2AfterLog).to.eql({todos: ["Pass this test."]});
+		});
+
+
+		it("throws on invalid action path", () => {
+			expect(astore.dispatch.bind(astore, "invalid.path")).to.throw(Error);
 		});
 	});
 
-	describe("subscribe", () => {});
+	describe("middleware", () => {
+		let astore;
 
-	describe("getMiddlewares", () => {
-		it("returns all the middlewares acting on a state", () => {
-			let state = State();
-			let mid1 = () => {};
-
-			// extended middleware
-			let mid1x = state.addMiddleware("", mid1);
-			expect(state.getMiddlewares()).to.eql([mid1x]);
+		beforeEach(() => {
+			astore = Store();
 		});
-	});
 
-	describe("addMiddleware", () => {
-		it("adds a middleware which acts on specific path.", () => {
-			let state = State();
-
+		it("returns a middleware which acts on specific path.", () => {
 			let middlewareLog;
 			let middleware = (path, action) => {
 				return (previousState, payload) => {
@@ -186,7 +175,7 @@ describe("state", () => {
 
 			let returnVal;
 			// "" - global
-			let globalMiddleware = state.addMiddleware(middleware);
+			let globalMiddleware = astore.middleware(middleware);
 			expect(globalMiddleware).to.exist;
 
 			returnVal = globalMiddleware("todos", action)("previousState", "payload");
@@ -194,7 +183,7 @@ describe("state", () => {
 			expect(returnVal).to.eql(["previousState", "payload"]);
 
 			// "key"
-			let todoMiddleware = state.addMiddleware("todos", middleware);
+			let todoMiddleware = astore.middleware("todos", middleware);
 			expect(todoMiddleware).to.exist;
 
 			returnVal = todoMiddleware("todos.remove", action)("previousState", "payload");
@@ -207,32 +196,23 @@ describe("state", () => {
 			expect(returnVal).to.eql(["previousState", "payload"]);
 
 			// "key.action"
-			let todosAddMiddleware = state.addMiddleware("todos.add", middleware);
+			let todosAddMiddleware = astore.middleware("todos.add", middleware);
 			expect(todoMiddleware).to.exist;
 
 			returnVal = todosAddMiddleware("todos.add", action)("previousState", "payload");
 			expect(middlewareLog).to.eql(["todos.add", "previousState", "payload"]);
 			expect(returnVal).to.eql(["previousState", "payload"]);
 		});
-	});
 
-	describe("removeMiddleware", () => {
-		it("removes a middleware", () => {
-			let state = State();
-			let mid1 = () => {};
-			let mid2 = () => {};
-			let mid3 = () => {};
+		it("gets/sets middleware if invoked without parameters", () => {
+			let mid1 = astore.middleware(()=>{});
+			expect(astore.middleware()).to.eql([mid1]);
+		});
 
-			let mid1x = state.addMiddleware("", mid1);
-			let mid2x = state.addMiddleware("", mid2);
-			let mid3x = state.addMiddleware("", mid3);
-
-			state.removeMiddleware(mid1x);
-			expect(state.getMiddlewares()).to.eql([mid2x, mid3x]);
-
-			state.removeMiddleware(mid2x);
-			state.removeMiddleware(mid3x);
-			expect(state.getMiddlewares()).to.eql([]);
+		it("ejects a middleware if it has already been injected.", () => {
+			let mid1 = astore.middleware(()=>{});
+			astore.middleware(mid1);
+			expect(astore.middleware()).to.eql([]);
 		});
 	});
 });

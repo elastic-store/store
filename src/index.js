@@ -1,27 +1,29 @@
-export const State = function () {
-	let state = {};
-	let actions = {};
-	let middlewares = [];
+export const Store = function (initialActions, initialMiddlewares, initialState) {
+	let actions = initialActions || {};
+	let middlewares = initialMiddlewares || [];
+	let state = initialState || {};
 
-	let newState = function (stateOverride) {
-		if (stateOverride) {
-			Object.assign(state, stateOverride);
+	let newStore = function (stateOverrides) {
+		if (stateOverrides) {
+			Object.assign(state, stateOverrides);
 		}
 
 		return state;	
 	};
 
-	newState.actions = function (newActions) {
+	newStore.action = function (newActions) {
 		if (!newActions) return actions;
 		Object.assign(actions, newActions);
 	};
 
-	newState.apply = function (path, payload) {
+	newStore.dispatch = function (path, payload) {
 		let frags = path.split(".");
 
 		let action;
 		try {
-			action = actions[frags[0]][frags[1]];
+			action = frags.reduce((action, frag) => {
+				return action[frag];
+			}, actions);
 		}
 		catch (err) {
 			if (err instanceof TypeError) {
@@ -29,21 +31,28 @@ export const State = function () {
 			}
 		}
 
-		let wrappedState = (preState, payload) => {
-			state[frags[0]] = action(preState, payload);
+		let wrappedAction = (entireState, payload) => {
+			let prevState = entireState[frags[0]]
+			state[frags[0]] = action(prevState, payload);
 			return state;
 		};
 
 		let finalAction = middlewares.reduceRight((action, middleware) => {
 			return middleware(path, action);
-		}, wrappedState);
+		}, wrappedAction);
 
-		return finalAction(state[frags[0]], payload)
+		return finalAction(state, payload)
 	};
 
-	newState.subscribe = function (callback) {};
+	newStore.middleware = (desiredPath, middleware) => {
+		if (desiredPath === undefined) return middlewares;
 
-	newState.addMiddleware = (desiredPath, middleware) => {
+		let index = middlewares.indexOf(desiredPath);
+		if (index !== -1) {
+			middlewares.splice(index, 1);
+			return desiredPath;
+		}
+
 		let pathAwareMiddleware = (appliedPath, action) => {
 			if (typeof desiredPath === "function") {
 				return desiredPath(appliedPath, action);
@@ -61,15 +70,5 @@ export const State = function () {
 		return pathAwareMiddleware;
 	};
 
-	newState.removeMiddleware = (toRemove) => {
-		middlewares = middlewares.filter((mid) => {
-			return mid !== toRemove;
-		});
-	};
-
-	newState.getMiddlewares = () => {
-		return middlewares;
-	};
-
-	return newState;
+	return newStore;
 };
