@@ -208,9 +208,9 @@ describe("Store", () => {
 			expect(astore.middleware()).to.eql([mid1]);
 		});
 
-		it("ejects a middleware if it has already been injected.", () => {
+		it("can be detached from middleware pool.", () => {
 			let mid1 = astore.middleware(()=>{});
-			astore.middleware(mid1);
+			mid1.detach();
 			expect(astore.middleware()).to.eql([]);
 		});
 	});

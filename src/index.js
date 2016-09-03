@@ -47,12 +47,6 @@ export const Store = function (initialActions, initialMiddlewares, initialState)
 	newStore.middleware = (desiredPath, middleware) => {
 		if (desiredPath === undefined) return middlewares;
 
-		let index = middlewares.indexOf(desiredPath);
-		if (index !== -1) {
-			middlewares.splice(index, 1);
-			return desiredPath;
-		}
-
 		let pathAwareMiddleware = (appliedPath, action) => {
 			if (typeof desiredPath === "function") {
 				return desiredPath(appliedPath, action);
@@ -63,6 +57,13 @@ export const Store = function (initialActions, initialMiddlewares, initialState)
 			}
 
 			return action;
+		};
+
+		pathAwareMiddleware.detach = () => {
+			let index = middlewares.indexOf(pathAwareMiddleware);
+			if (index !== -1) {
+				middlewares.splice(index, 1);
+			}
 		};
 
 		middlewares.push(pathAwareMiddleware);
