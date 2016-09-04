@@ -12,7 +12,7 @@ describe("Store", () => {
 	it("accepts initial middlewares", () => {
 		let initialMiddlewares = {};
 		let astore = Store(null, initialMiddlewares);
-		expect(astore.middleware()).to.equal(initialMiddlewares);
+		expect(astore.middlewares()).to.equal(initialMiddlewares);
 	});
 
 	it("accepts initial state", () => {
@@ -35,14 +35,20 @@ describe("Store", () => {
 		expect(astore.action).to.exist;
 	});
 
-	it("has 'middleware' method.", () => {
+	it("has 'middlewares' method.", () => {
 		let astore = Store();
-		expect(astore.middleware).to.exist;
+		expect(astore.middlewares).to.exist;
 	});
 
 	it("has 'dispatch' method.", () => {
 		let astore = Store();
 		expect(astore.dispatch).to.exist;
+	});
+
+
+	it("has 'attach' method.", () => {
+		let astore = Store();
+		expect(astore.attach).to.exist;
 	});
 
 	describe("action", () => {
@@ -136,8 +142,8 @@ describe("Store", () => {
 				}
 			};
 
-			astore.middleware("", mid1);
-			astore.middleware("", mid2);
+			astore.attach("", mid1);
+			astore.attach("", mid2);
 			astore.action({todos: todosActions});
 			astore.dispatch("todos.add", "Pass this test.");
 
@@ -153,12 +159,18 @@ describe("Store", () => {
 		});
 	});
 
-	describe("middleware", () => {
+	describe("attach", () => {
 		let astore;
 
 		beforeEach(() => {
 			astore = Store();
 		});
+
+		it("attaches middleware", () => {
+			let mid1 = astore.attach(()=>{});
+			expect(astore.middlewares()).to.eql([mid1]);
+		});
+
 
 		it("returns a middleware which acts on specific path.", () => {
 			let middlewareLog;
@@ -174,7 +186,7 @@ describe("Store", () => {
 
 			let returnVal;
 			// "" - global
-			let globalMiddleware = astore.middleware(middleware);
+			let globalMiddleware = astore.attach(middleware);
 			expect(globalMiddleware).to.exist;
 
 			returnVal = globalMiddleware("todos", action)("previousState", "payload");
@@ -182,7 +194,7 @@ describe("Store", () => {
 			expect(returnVal).to.eql(["previousState", "payload"]);
 
 			// "key"
-			let todoMiddleware = astore.middleware("todos", middleware);
+			let todoMiddleware = astore.attach("todos", middleware);
 			expect(todoMiddleware).to.exist;
 
 			returnVal = todoMiddleware("todos.remove", action)("previousState", "payload");
@@ -195,7 +207,7 @@ describe("Store", () => {
 			expect(returnVal).to.eql(["previousState", "payload"]);
 
 			// "key.action"
-			let todosAddMiddleware = astore.middleware("todos.add", middleware);
+			let todosAddMiddleware = astore.attach("todos.add", middleware);
 			expect(todoMiddleware).to.exist;
 
 			returnVal = todosAddMiddleware("todos.add", action)("previousState", "payload");
@@ -203,15 +215,19 @@ describe("Store", () => {
 			expect(returnVal).to.eql(["previousState", "payload"]);
 		});
 
-		it("gets/sets middleware if invoked without parameters", () => {
-			let mid1 = astore.middleware(()=>{});
-			expect(astore.middleware()).to.eql([mid1]);
-		});
-
 		it("can be detached from middleware pool.", () => {
-			let mid1 = astore.middleware(()=>{});
+			let mid1 = astore.attach(()=>{});
 			mid1.detach();
-			expect(astore.middleware()).to.eql([]);
+			expect(astore.middlewares()).to.eql([]);
+		});
+	});
+
+
+	describe("middlewares", () => {
+		it("lists midlewares attached to a store.", () => {
+			let astore = Store();
+			let mid1 = astore.attach(()=>{});
+			expect(astore.middlewares()).to.eql([mid1]);
 		});
 	});
 });

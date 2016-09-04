@@ -44,9 +44,7 @@ export const Store = function (initialActions, initialMiddlewares, initialState)
 		return finalAction(state, payload)
 	};
 
-	newStore.middleware = (desiredPath, middleware) => {
-		if (desiredPath === undefined) return middlewares;
-
+	newStore.attach = (desiredPath, middleware) => {
 		let pathAwareMiddleware = (appliedPath, action) => {
 			if (typeof desiredPath === "function") {
 				return desiredPath(appliedPath, action);
@@ -69,6 +67,10 @@ export const Store = function (initialActions, initialMiddlewares, initialState)
 		middlewares.push(pathAwareMiddleware);
 
 		return pathAwareMiddleware;
+	};
+
+	newStore.middlewares = () => {
+		return middlewares;
 	};
 
 	return newStore;
