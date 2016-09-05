@@ -107,6 +107,32 @@ describe("Store", () => {
 			expect(astore().todos).to.eql(["Go to mars."]);
 		});
 
+		it("passes 'path', 'action', and 'store' to the middleware.", () => {
+			let dpath, daction, dstore;
+			let mid = (path, action, store) => {
+				return (previousState, payload) => {
+					dpath = path;
+					daction = action;
+					dstore = store;
+					return action(previousState, payload);
+				};
+			};
+
+			let actions = {
+				echo () {}
+			};
+			
+			astore.action({x: actions});
+			astore.attach(mid);
+
+			astore.dispatch("x.echo");
+
+			expect(dpath).to.equal("x.echo");
+			expect(daction).to.exist;
+			expect(dstore).to.equal(astore);
+
+		});
+
 		it("applies midlewares", () => {
 			let mid1BeforeLog;
 			let mid1AfterLog;

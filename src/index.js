@@ -38,20 +38,20 @@ export const Store = function (initialActions, initialMiddlewares, initialState)
 		};
 
 		let finalAction = middlewares.reduceRight((action, middleware) => {
-			return middleware(path, action);
+			return middleware(path, action, newStore);
 		}, wrappedAction);
 
 		return finalAction(state, payload)
 	};
 
 	newStore.attach = (desiredPath, middleware) => {
-		let pathAwareMiddleware = (appliedPath, action) => {
+		let pathAwareMiddleware = (appliedPath, action, store) => {
 			if (typeof desiredPath === "function") {
-				return desiredPath(appliedPath, action);
+				return desiredPath(appliedPath, action, store);
 			}
 
 			if (appliedPath.indexOf(desiredPath) === 0) {
-				return middleware(appliedPath, action);
+				return middleware(appliedPath, action, store);
 			}
 
 			return action;
