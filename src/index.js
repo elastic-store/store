@@ -1,24 +1,36 @@
+export const isEmpty = (obj) => {
+	return JSON.stringify(obj) === JSON.stringify({});
+};
+
+export const deepClone = (obj) => {
+	return JSON.parse(JSON.stringify(obj));
+};
+
 export const initStateLeaves = (tree) => {
 	for (let key in tree) {
 		if (tree.hasOwnProperty(key)) {
-			if (typeof tree[key] === "function") return undefined;
-			tree[key] = initStateLeaves(tree[key]);
+			if (isEmpty(tree[key])) {
+				tree[key] = undefined;
+			}
+			else {
+				tree[key] = initStateLeaves(tree[key]);
+			}
 		}
 	}
 	return tree;
 };
 
 export const genStateTree = (actions) => {
-	let stateTree = Object.assign({}, actions);
+	let stateTree = deepClone(actions);
 	stateTree = initStateLeaves(stateTree);
 	return stateTree;
 };
 
-export const Store = function (actions, initialMiddlewares, initialState) {
+export const Store = function (actions, middlewares = [], initialState = {}) {
 	if (!actions) throw Error("Please pass action tree.");
-	let middlewares = initialMiddlewares || [];
+	if (isEmpty(actions)) throw Error("Action tree cannot be empty.");
 	let state = genStateTree(actions);
-	Object.assign(state, initialState);
+	Object.assign(state, deepClone(initialState));
 
 	let newStore = function (stateOverrides) {
 		if (stateOverrides) {
@@ -48,8 +60,22 @@ export const Store = function (actions, initialMiddlewares, initialState) {
 		}
 
 		let wrappedAction = (entireState, payload) => {
-			let prevState = entireState[frags[0]]
-			state[frags[0]] = action(prevState, payload);
+			let setValueAtPath = (subTree, frags) => {
+				let frag = frags.shift();
+
+				if (frags.length > 0) {
+					subTree[frag] = setValueAtPath(subTree[frag], frags);
+					return subTree;
+				}
+
+				subTree[frag] = action(subTree[frag], payload);
+				return subTree;
+			};
+
+			let frags = path.split(".");
+			frags.pop();
+
+			state = setValueAtPath(entireState, frags);
 			return state;
 		};
 

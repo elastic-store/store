@@ -206,6 +206,40 @@ describe("Store", () => {
 		it("throws on invalid action path", () => {
 			expect(astore.dispatch.bind(astore, "invalid.path")).to.throw(Error);
 		});
+
+		it("can dispatch to nested actions", () => {
+			let actionTree = {
+				todos: {
+					list: {
+						add (previousState = [], payload) {
+							return previousState.concat(payload);
+						}
+					},
+					checkAll: {
+						toggle (previousState = false) {
+							return !previousState;
+						}
+					}
+				}
+			};
+
+			let store = Store(actionTree);
+			let before = store();
+
+			store.dispatch("todos.list.add", "Test nested dispatch.");
+			store.dispatch("todos.checkAll.toggle");
+
+			let after = store();
+
+			// make sure state reference is maintained
+			expect(before).to.equal(after);
+			expect(before.todos).to.equal(after.todos);
+			expect(before.todos.list).to.eql(["Test nested dispatch."]);;
+
+			expect(after.todos.checkAll).to.equal(true);
+
+
+		});
 	});
 
 	describe("attach", () => {
