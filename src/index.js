@@ -1,7 +1,24 @@
-export const Store = function (initialActions, initialMiddlewares, initialState) {
-	let actions = initialActions || {};
+export const initStateLeaves = (tree) => {
+	for (let key in tree) {
+		if (tree.hasOwnProperty(key)) {
+			if (typeof tree[key] === "function") return undefined;
+			tree[key] = initStateLeaves(tree[key]);
+		}
+	}
+	return tree;
+};
+
+export const genStateTree = (actions) => {
+	let stateTree = Object.assign({}, actions);
+	stateTree = initStateLeaves(stateTree);
+	return stateTree;
+};
+
+export const Store = function (actions, initialMiddlewares, initialState) {
+	if (!actions) throw Error("Please pass action tree.");
 	let middlewares = initialMiddlewares || [];
-	let state = initialState || {};
+	let state = genStateTree(actions);
+	Object.assign(state, initialState);
 
 	let newStore = function (stateOverrides) {
 		if (stateOverrides) {
@@ -11,9 +28,8 @@ export const Store = function (initialActions, initialMiddlewares, initialState)
 		return state;	
 	};
 
-	newStore.action = function (newActions) {
-		if (!newActions) return actions;
-		Object.assign(actions, newActions);
+	newStore.actions = function () {
+		return actions;
 	};
 
 	newStore.dispatch = function (path, payload) {

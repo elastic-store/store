@@ -1,28 +1,86 @@
-import {Store} from "./../src/index.js";
+import {Store, initStateLeaves, genStateTree} from "./../src/index.js";
 import {expect} from "chai";
 
+describe("genStateTree", () => {
+	it("generates state tree based upon action tree", () => {
+		let actions = {
+			feed: {
+				list: {
+					fetch() {}
+				},
+				order: {
+					latest() {},
+					popular() {}
+				}
+			},
+			chats: {
+				userX: {
+					sendMessage () {},
+					receiveMessage() {}
+				}
+			}
+		};
+
+		let expectedStateTree = {
+			feed: {
+				list: undefined,
+				order: undefined
+			},
+			chats: {
+				userX: undefined
+			}
+		};
+
+		expect(genStateTree(actions)).to.eql(expectedStateTree);
+		expect(genStateTree(actions)).to.not.equal(expectedStateTree);
+	});
+});
+
+describe("initStateLeaves", () => {
+	it("returns undefined if tree leaves have function.", () => {
+		let tree = {
+			add () {}
+		};
+		expect(initStateLeaves(tree)).to.equal(undefined);
+	});
+
+	it("returns tree itself if tree leaves have object.", () => {
+		let tree = {
+			branches: {}
+		};
+		expect(initStateLeaves(tree)).to.equal(tree);
+	});
+});
 
 describe("Store", () => {
-	it("accepts initial actions", () => {
-		let initialActions = {};
-		let astore = Store(initialActions);
-		expect(astore.action()).to.equal(initialActions);
+	it("accepts actions.", () => {
+		let actions = {
+			todos: {
+				add () {}
+			}
+		};
+		let astore = Store(actions);
+		expect(astore.actions()).to.equal(actions);
+	});
+
+	it("complains if actions is absent.", () => {
+		expect(Store.bind(Store)).to.throw(Error);
 	});
 
 	it("accepts initial middlewares", () => {
 		let initialMiddlewares = {};
-		let astore = Store(null, initialMiddlewares);
+		let astore = Store({}, initialMiddlewares);
 		expect(astore.middlewares()).to.equal(initialMiddlewares);
 	});
 
 	it("accepts initial state", () => {
-		let initialState = {};
-		let astore = Store(null, null, initialState);
-		expect(astore()).to.equal(initialState);
+		let initialState = {todos: {}};
+		let astore = Store({}, {}, initialState);
+		expect(astore()).to.eql(initialState);
 	});
 
-	it("is a getter/setter of state.", () => {
-		let astore = Store();
+	it("'s instance is a getter/setter of state.", () => {
+		let astore = Store({});
 
 		let data = {todos: [1]};
 		astore(data);
@@ -30,61 +88,35 @@ describe("Store", () => {
 		expect(astore()).to.eql(data);
 	})
 
-	it("has 'action' method.", () => {
-		let astore = Store();
-		expect(astore.action).to.exist;
+	it("has 'actions' method.", () => {
+		let astore = Store({});
+		expect(astore.actions).to.exist;
 	});
 
 	it("has 'middlewares' method.", () => {
-		let astore = Store();
+		let astore = Store({});
 		expect(astore.middlewares).to.exist;
 	});
 
 	it("has 'dispatch' method.", () => {
-		let astore = Store();
+		let astore = Store({});
 		expect(astore.dispatch).to.exist;
 	});
 
 
 	it("has 'attach' method.", () => {
-		let astore = Store();
+		let astore = Store({});
 		expect(astore.attach).to.exist;
 	});
 
-	describe("action", () => {
-		let astore;
-		beforeEach(() => {
-			astore = Store();
-		});
-
-		it("gets/sets actions.", () => {
+	describe("actions", () => {
+		it("gets actions.", () => {
 			let todosAction = {
 				add () {}
 			};
 
-			astore.action({todos: todosAction});
-			expect(astore.action().todos).to.equal(todosAction);
-		});
-
-		it("overrides existing actions under a key", () => {
-			let actions = {
-				todos: {
-					add () {}
-				},
-				x: {
-					xAction () {}
-				}
-			};
-			astore.action(actions);
-
-			let newActions = {
-				remove () {}
-			};
-			astore.action({todos: newActions});
-
-			let gotActions = astore.action();
-			expect(gotActions.todos).to.eql(newActions);
-			expect(gotActions.x).to.eql(actions.x);
+			let astore = Store({todos: todosAction});
+			expect(astore.actions().todos).to.equal(todosAction);
 		});
 	});
 
@@ -92,17 +124,15 @@ describe("Store", () => {
 		let astore;
 
 		beforeEach(() => {
-			astore = Store();
-		});
-
-		it("applies action at specified path to state associated with it.", () => {
 			let todosActions = {
 				add (todos = [], atodo) {
 					return todos.concat(atodo);
 				}
 			};
+			astore = Store({todos: todosActions});
+		});
 
-			astore.action({todos: todosActions});
+		it("applies action at specified path to state associated with it.", () => {
 			astore.dispatch("todos.add", "Go to mars.")
 			expect(astore().todos).to.eql(["Go to mars."]);
 		});
@@ -118,16 +148,10 @@ describe("Store", () => {
 				};
 			};
 
-			let actions = {
-				echo () {}
-			};
-			
-			astore.action({x: actions});
 			astore.attach(mid);
+			astore.dispatch("todos.add");
 
-			astore.dispatch("x.echo");
-
-			expect(dpath).to.equal("x.echo");
+			expect(dpath).to.equal("todos.add");
 			expect(daction).to.exist;
 			expect(dstore).to.equal(astore);
 
@@ -162,21 +186,20 @@ describe("Store", () => {
 				};
 			};
 
-			let todosActions = {
-				add (todos = [], atodo) {
-					return todos.concat(atodo);
-				}
-			};
-
 			astore.attach("", mid1);
 			astore.attach("", mid2);
-			astore.action({todos: todosActions});
 			astore.dispatch("todos.add", "Pass this test.");
 
-			expect(mid1BeforeLog).to.eql([{}, "Pass this test.", "todos.add"]);
+			let expectedPreviousState = {
+				todos: undefined
+			};
+
+			expect(mid1BeforeLog).to.eql(
+					[expectedPreviousState, "Pass this test.", "todos.add"]);
 			expect(mid1AfterLog).to.eql({todos: ["Pass this test."]});
 
-			expect(mid2BeforeLog).to.eql([{}, "Pass this test.", "todos.add"]);
+			expect(mid2BeforeLog).to.eql(
+					[expectedPreviousState, "Pass this test.", "todos.add"]);
 			expect(mid2AfterLog).to.eql({todos: ["Pass this test."]});
 		});
 
@@ -189,7 +212,7 @@ describe("Store", () => {
 		let astore;
 
 		beforeEach(() => {
-			astore = Store();
+			astore = Store({});
 		});
 
 		it("attaches middleware", () => {
@@ -251,7 +274,7 @@ describe("Store", () => {
 
 	describe("middlewares", () => {
 		it("lists midlewares attached to a store.", () => {
-			let astore = Store();
+			let astore = Store({});
 			let mid1 = astore.attach(()=>{});
 			expect(astore.middlewares()).to.eql([mid1]);
 		});
