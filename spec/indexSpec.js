@@ -34,25 +34,40 @@ describe("genStateTree", () => {
 		expect(genStateTree(actions)).to.eql(expectedStateTree);
 		expect(genStateTree(actions)).to.not.equal(expectedStateTree);
 	});
-});
 
-describe("initStateLeaves", () => {
-	it("returns undefined if a key is empty.", () => {
-		let tree = {
-			branches: {}
+	it("sets initial states", () => {
+		let actions = {
+			feed: {
+				list: {
+					init() {return []},
+					fetch() {}
+				},
+				order: {
+					init() {return "latest"},
+					latest() {},
+					popular() {}
+				}
+			},
+			chats: {
+				userX: {
+					sendMessage () {},
+					receiveMessage() {}
+				}
+			}
 		};
 
-		let expected = {
-			branches: undefined
+		let expectedStateTree = {
+			feed: {
+				list: [],
+				order: "latest"
+			},
+			chats: {
+				userX: undefined
+			}
 		};
-		expect(initStateLeaves(tree)).to.eql(expected);
-	});
 
-	it("returns tree itself if tree leaves have object.", () => {
-		let tree = {
-			branches: {x: 1}
-		};
-		expect(initStateLeaves(tree)).to.equal(tree);
+		expect(genStateTree(actions)).to.eql(expectedStateTree);
+		expect(genStateTree(actions)).to.not.equal(expectedStateTree);
 	});
 });
 

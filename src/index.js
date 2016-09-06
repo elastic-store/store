@@ -2,35 +2,26 @@ export const isEmpty = (obj) => {
 	return JSON.stringify(obj) === JSON.stringify({});
 };
 
-export const deepClone = (obj) => {
-	return JSON.parse(JSON.stringify(obj));
-};
-
-export const initStateLeaves = (tree) => {
+export const genStateTree = (tree, state = {}) => {
 	for (let key in tree) {
 		if (tree.hasOwnProperty(key)) {
-			if (isEmpty(tree[key])) {
-				tree[key] = undefined;
+			if (typeof tree[key] === "function") {
+				state = tree.init? tree.init(): undefined;
 			}
 			else {
-				tree[key] = initStateLeaves(tree[key]);
+				state[key] = {}
+				state[key] = genStateTree(tree[key], state[key]);
 			}
 		}
 	}
-	return tree;
-};
-
-export const genStateTree = (actions) => {
-	let stateTree = deepClone(actions);
-	stateTree = initStateLeaves(stateTree);
-	return stateTree;
+	return state;
 };
 
 export const Store = function (actions, middlewares = [], initialState = {}) {
 	if (!actions) throw Error("Please pass action tree.");
 	if (isEmpty(actions)) throw Error("Action tree cannot be empty.");
 	let state = genStateTree(actions);
-	Object.assign(state, deepClone(initialState));
+	Object.assign(state, initialState);
 
 	let newStore = function (stateOverrides) {
 		if (stateOverrides) {
