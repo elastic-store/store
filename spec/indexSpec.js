@@ -37,28 +37,37 @@ describe("genStateTree", () => {
 });
 
 describe("initStateLeaves", () => {
-	it("returns undefined if tree leaves have function.", () => {
+	it("returns undefined if a key is empty.", () => {
 		let tree = {
-			add () {}
+			branches: {}
 		};
-		expect(initStateLeaves(tree)).to.equal(undefined);
+
+		let expected = {
+			branches: undefined
+		};
+		expect(initStateLeaves(tree)).to.eql(expected);
 	});
 
 	it("returns tree itself if tree leaves have object.", () => {
 		let tree = {
-			branches: {}
+			branches: {x: 1}
 		};
 		expect(initStateLeaves(tree)).to.equal(tree);
 	});
 });
 
 describe("Store", () => {
-	it("accepts actions.", () => {
-		let actions = {
+	let actions;
+
+	beforeEach(() => {
+		actions = {
 			todos: {
 				add () {}
 			}
 		};
+	});
+
+	it("accepts actions.", () => {
 		let astore = Store(actions);
 		expect(astore.actions()).to.equal(actions);
 	});
@@ -69,18 +78,18 @@ describe("Store", () => {
 
 	it("accepts initial middlewares", () => {
 		let initialMiddlewares = {};
-		let astore = Store({}, initialMiddlewares);
+		let astore = Store(actions, initialMiddlewares);
 		expect(astore.middlewares()).to.equal(initialMiddlewares);
 	});
 
 	it("accepts initial state", () => {
 		let initialState = {todos: {}};
-		let astore = Store({}, {}, initialState);
+		let astore = Store(actions, {}, initialState);
 		expect(astore()).to.eql(initialState);
 	});
 
 	it("'s instance is a getter/setter of state.", () => {
-		let astore = Store({});
+		let astore = Store(actions);
 
 		let data = {todos: [1]};
 		astore(data);
@@ -89,23 +98,23 @@ describe("Store", () => {
 	})
 
 	it("has 'actions' method.", () => {
-		let astore = Store({});
+		let astore = Store(actions);
 		expect(astore.actions).to.exist;
 	});
 
 	it("has 'middlewares' method.", () => {
-		let astore = Store({});
+		let astore = Store(actions);
 		expect(astore.middlewares).to.exist;
 	});
 
 	it("has 'dispatch' method.", () => {
-		let astore = Store({});
+		let astore = Store(actions);
 		expect(astore.dispatch).to.exist;
 	});
 
 
 	it("has 'attach' method.", () => {
-		let astore = Store({});
+		let astore = Store(actions);
 		expect(astore.attach).to.exist;
 	});
 
@@ -246,7 +255,12 @@ describe("Store", () => {
 		let astore;
 
 		beforeEach(() => {
-			astore = Store({});
+			let actions = {
+				todos: {
+					add () {}
+				}
+			};
+			astore = Store(actions);
 		});
 
 		it("attaches middleware", () => {
@@ -308,7 +322,12 @@ describe("Store", () => {
 
 	describe("middlewares", () => {
 		it("lists midlewares attached to a store.", () => {
-			let astore = Store({});
+			let actions = {
+				todos: {
+					add () {}
+				}
+			};
+			let astore = Store(actions);
 			let mid1 = astore.attach(()=>{});
 			expect(astore.middlewares()).to.eql([mid1]);
 		});
