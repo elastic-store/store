@@ -1,7 +1,7 @@
 {
-  "name": "easystate",
+  "name": "elastic-store",
   "version": "0.1.0",
-  "description": "Easy state management for Javascript.",
+  "description": "A flexible state container.",
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha --compilers js:babel-register spec/*",
@@ -15,16 +15,15 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ludbek/easystate.git"
+    "url": "git+https://github.com/ludbek/elastic-store.git"
   },
   "bugs": {
-    "url": "https://github.com/ludbek/easystate/issues"
+    "url": "https://github.com/ludbek/elastic-store/issues"
   },
-  "homepage": "https://github.com/ludbek/easystate#readme",
+  "homepage": "https://github.com/ludbek/elastic-store#readme",
   "keywords": [
     "state",
-    "history",
-    "time travel"
+	"store"
   ],
   "author": "ludbek",
   "license": "ISC",
@@ -34,13 +33,11 @@
     "babel-loader": "^6.2.4",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.11.5",
+    "babel-plugin-transform-object-assign": "^6.8.0",
     "babel-preset-es2015": "^6.9.0",
     "babel-register": "^6.11.5",
     "chai": "^3.5.0",
     "mocha": "^2.5.3",
     "webpack": "^1.12.14"
-  },
-  "dependencies": {
-    "babel-plugin-transform-object-assign": "^6.8.0"
   }
 }
