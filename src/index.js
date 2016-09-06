@@ -9,7 +9,7 @@ export const genStateTree = (tree, state = {}) => {
 				state = tree.init? tree.init(): undefined;
 			}
 			else {
-				state[key] = {}
+				state[key] = state[key] || {}
 				state[key] = genStateTree(tree[key], state[key]);
 			}
 		}
@@ -31,7 +31,11 @@ export const Store = function (actions, middlewares = [], initialState = {}) {
 		return state;	
 	};
 
-	newStore.actions = function () {
+	newStore.actions = function (newActions) {
+		if (newActions) {
+			actions = Object.assign(actions, newActions);
+			genStateTree(newActions, state);
+		}
 		return actions;
 	};
 

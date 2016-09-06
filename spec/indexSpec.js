@@ -134,13 +134,40 @@ describe("Store", () => {
 	});
 
 	describe("actions", () => {
-		it("gets actions.", () => {
-			let todosAction = {
+		let astore, todosAction;
+		
+		beforeEach(() => {
+			todosAction = {
+				init() {return []},
 				add () {}
 			};
 
-			let astore = Store({todos: todosAction});
+			astore = Store({todos: todosAction});
+		});
+
+		it("gets actions.", () => {
 			expect(astore.actions().todos).to.equal(todosAction);
+		});
+
+		it("merges new actions", () => {
+			let chatAction = {
+				start () {}
+			};
+			astore.actions({chat: chatAction});
+
+			expect(astore.actions().chat).to.equal(chatAction);
+			expect(astore.actions().todos).to.equal(todosAction);
+		});
+
+		it("generates state as per new actions", () => {
+			let chatAction = {
+				init () {return "tada!!"},
+				start () {}
+			};
+			astore.actions({chat: chatAction});
+
+			expect(astore().chat).to.equal("tada!!");
+			expect(astore().todos).to.eql([]);
 		});
 	});
 
