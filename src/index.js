@@ -40,21 +40,21 @@ export const Store = function (actions, middlewares = [], initialState = {}) {
 	};
 
 	newStore.dispatch = function (path, payload) {
-		let frags = path.split(".");
-
-		let action;
-		try {
-			action = frags.reduce((action, frag) => {
-				return action[frag];
-			}, actions);
-		}
-		catch (err) {
-			if (err instanceof TypeError) {
-				throw Error(`Could not find action associated with path '${path}'.`);
-			}
-		}
-
 		let wrappedAction = (entireState, payload) => {
+			let frags = path.split(".");
+			let action;
+
+			try {
+				action = frags.reduce((action, frag) => {
+					return action[frag];
+				}, actions);
+			}
+			catch (err) {
+				if (err instanceof TypeError) {
+					throw Error(`Could not find action associated with path '${path}'.`);
+				}
+			}
+
 			let setValueAtPath = (subTree, frags) => {
 				let frag = frags.shift();
 
@@ -67,7 +67,6 @@ export const Store = function (actions, middlewares = [], initialState = {}) {
 				return subTree;
 			};
 
-			let frags = path.split(".");
 			frags.pop();
 
 			return setValueAtPath(entireState, frags);

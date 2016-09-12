@@ -254,8 +254,8 @@ describe("Store", () => {
 			expect(mid2AfterLog).to.eql({todos: ["Pass this test."]});
 		});
 
-		it("throws on invalid action path", () => {
-			expect(astore.dispatch.bind(astore, "invalid.path")).to.throw(Error);
+		it("throws on invalid action", () => {
+			expect(astore.dispatch.bind(astore, "invalid.action")).to.throw(Error);
 		});
 
 		it("can dispatch to nested actions", () => {
@@ -288,8 +288,28 @@ describe("Store", () => {
 			expect(before.todos.list).to.eql(["Test nested dispatch."]);;
 
 			expect(after.todos.checkAll).to.equal(true);
+		});
 
+		it("can dispatch pseudo actions if there is a middleware to handle it.", () => {
+			let pseudoPath;
+			let actionTree = {
+				todos: {
+					add () {}
+				}
+			};
 
+			let mid = (path, action, middleware) => {
+				return (state, payload) => {
+					pseudoPath = path;
+					return state;
+				}
+			};
+
+			let store = Store(actionTree);
+			store.attach(mid);
+			store.dispatch("a.pseudo.action");
+
+			expect(pseudoPath).to.equal("a.pseudo.action");
 		});
 	});
 
