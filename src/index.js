@@ -70,8 +70,7 @@ export const Store = function (actions, middlewares = [], initialState = {}) {
 			let frags = path.split(".");
 			frags.pop();
 
-			state = setValueAtPath(entireState, frags);
-			return state;
+			return setValueAtPath(entireState, frags);
 		};
 
 		let finalAction = middlewares.reduceRight((action, middleware) => {
