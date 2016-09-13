@@ -72,24 +72,24 @@ export const Store = function (actions, middlewares = [], initialState = {}) {
 			return setValueAtPath(entireState, frags);
 		};
 
-		let finalAction = middlewares.reduceRight((action, middleware) => {
-			return middleware(path, action, newStore);
+		let finalAction = middlewares.reduceRight((next, middleware) => {
+			return middleware(path, next, newStore);
 		}, wrappedAction);
 
 		return finalAction(state, payload)
 	};
 
 	newStore.attach = (desiredPath, middleware) => {
-		let pathAwareMiddleware = (appliedPath, action, store) => {
+		let pathAwareMiddleware = (appliedPath, next, store) => {
 			if (typeof desiredPath === "function") {
-				return desiredPath(appliedPath, action, store);
+				return desiredPath(appliedPath, next, store);
 			}
 
 			if (appliedPath.indexOf(desiredPath) === 0) {
-				return middleware(appliedPath, action, store);
+				return middleware(appliedPath, next, store);
 			}
 
-			return action;
+			return next;
 		};
 
 		pathAwareMiddleware.detach = () => {
