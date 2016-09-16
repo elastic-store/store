@@ -45,8 +45,14 @@ export const Store = function (actions, middlewares = [], initialState = {}) {
 			let action;
 
 			try {
-				action = frags.reduce((action, frag) => {
-					return action[frag];
+				action = frags.reduce((path, frag) => {
+					let subPath = path[frag];
+
+					if (subPath) {
+						return subPath;
+					}
+
+					throw new TypeError();
 				}, actions);
 			}
 			catch (err) {
