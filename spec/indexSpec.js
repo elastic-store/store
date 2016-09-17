@@ -87,8 +87,8 @@ describe("Store", () => {
 		expect(astore.actions()).to.equal(actions);
 	});
 
-	it("complains if actions is absent.", () => {
-		expect(Store.bind(Store)).to.throw(Error);
+	it("does not complain if actions is absent.", () => {
+		expect(Store.bind(Store)).not.to.throw(Error);
 	});
 
 	it("accepts initial middlewares", () => {

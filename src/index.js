@@ -17,9 +17,7 @@ export const genStateTree = (tree, state = {}) => {
 	return state;
 };
 
-export const Store = function (actions, middlewares = [], initialState = {}) {
-	if (!actions) throw Error("Please pass action tree.");
-	if (isEmpty(actions)) throw Error("Action tree cannot be empty.");
+export const Store = function (actions = {}, middlewares = [], initialState = {}) {
 	let state = genStateTree(actions);
 	Object.assign(state, initialState);
 
