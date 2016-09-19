@@ -1,4 +1,4 @@
-import {Store, genStateTree, getNode} from "./../src/index.js";
+import {Store, genStateTree, getSubStore} from "./../src/index.js";
 import {expect} from "chai";
 
 describe("genStateTree", () => {
@@ -396,47 +396,127 @@ describe("Store", () => {
 	});
 });
 
-describe("getNode", () => {
+describe("getSubStore", () => {
 	let actions = {
 		todos: {
-			add () {}
+			add (prevState = [], payload) {
+				return prevState.concat(payload);
+			}
 		},
 		notifications: {
-			list () {}
+			add () {}
 		}
 	};
-		
+
 	it("returns a store wrapper which operates on specific node.", () => {
 		let store = Store(actions);
-		let node = getNode(store, "todos");
-		expect(typeof node).to.equal("function");
+		let subStore = getSubStore(store, "todos");
+		expect(typeof subStore).to.equal("function");
 	});
 
-	describe("aNode", () => {
-		let node;
+	describe("subStore", () => {
+		let store, subStore;
 
 		beforeEach(() => {
-			let store = Store(actions);
-			node = getNode(store, "todos");	
+			let initialState = {
+				todos: ["Todo 1"],
+				notifications: ["Notification 1"]
+			};
+
+			store = Store(actions, [], initialState);
+			subStore = getSubStore(store, "todos");	
 		});
 
 		it("has 'actions' method.", () => {
-			expect(node.actions).to.exist;
+			expect(subStore.actions).to.exist;
 		});
 
 		it("has 'dispatch' method.", () => {
-			expect(node.dispatch).to.exist;
+			expect(subStore.dispatch).to.exist;
 		});
 
 		it("has 'attach' method.", () => {
-			expect(node.attach).to.exist;
+			expect(subStore.attach).to.exist;
 		});
 
-		describe("actions", () => {});
+		it("returns sub state", () => {
+			expect(subStore()).to.eql(store().todos);
+		});
 
+		it("throws if user tries to set state.", () => {
+			expect(subStore.bind(subStore, "new state")).to.throw(Error);
+		});
 
-		describe("dispatch", () => {});
+		describe("actions", () => {
+			it("returns actions attached at the node where sub store works.", () => {
+				expect(subStore.actions()).to.equal(store.actions().todos);
+			});
 
-		describe("attach", () => {});
+			it("attaches actions at the node where sub store works.", () => {
+				let newActions = {
+					add () {},
+					remove () {}
+				};
+
+				subStore.actions(newActions);
+				expect(store.actions().todos).to.equal(newActions);
+			});
+		});
+
+		describe("dispatch", () => {
+			it("appends subPath to the path where sub store works.", () => {
+				subStore.dispatch("add", ["New Todo"]);
+
+				expect(subStore()).to.eql(["Todo 1", "New Todo"]);
+			});
+		});
+
+		describe("attach", () => {
+			let mid, log;
+
+			beforeEach(() => {
+				mid = (path, next, store) => {
+					return (prevState, payload) => {
+						log = payload;
+						return next(prevState, payload);
+					};
+				};
+			});
+
+			it("attaches middleware to the node where store works.", () => {
+				subStore.attach(mid);
+				store.dispatch("todos.add", "New todo");
+				expect(log).to.equal("New todo");
+
+				log = undefined;
+				store.dispatch("notifications.add", "New notification");
+				expect(log).to.not.exist;
+			});
+
+			it("attaches middleware to the sub node", () => {
+				let newActions = {
+					todos: {
+						list: {
+							add (prevState = [], payload) {
+								return prevState.concat(payload);
+							}
+						},
+						allDone: {
+							toggle () {}
+						}
+					}
+				};
+
+				store.actions(newActions);
+				subStore.attach("list", mid);
+
+				store.dispatch("todos.list.add", "New todo");
+				expect(log).to.equal("New todo");
+
+				log = undefined;
+				store.dispatch("todos.allDone.toggle");
+				expect(log).to.not.exist;
+			});
+		});
 	});
 });

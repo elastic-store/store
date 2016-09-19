@@ -117,26 +117,37 @@ export const Store = function (actions = {}, middlewares = [], initialState = {}
 };
 
 
-export const getNode = function (store, path) {
-	let subStore = function () {
-		// Throw if user tries to set state
-		let nodes = path.split(".");
-		return nodes.reduce((subState, node) => {
+export const getSubStore = function (store, path) {
+	let getNode = (tree, path) => {
+		return path.split(".").reduce((subState, node) => {
 			return subState[node];
-		}, store());
+		}, tree);
 	};
 
-	subStore.actions = function () {
-		// Throw if user tries to get actions
-		return store.actions();
+	let subStore = function () {
+		if (arguments.length !== 0)  {
+			throw Error("Sub store cannot override state. Please use global store instead.");
+		}
+
+		return getNode(store(), path);
 	};
 
-	subStore.dispatch = function (subPath) {
-		return store.dispatch(`${path}.${subPath}`);
+	subStore.actions = function (newActions) {
+		if (!newActions) {
+			return getNode(store.actions(), path);
+		}
 	};
 
-	subStore.attach = function (subPath) {
-		return store.attach(`${path}.${subPath}`);
+	subStore.dispatch = function (subPath, payload) {
+		return store.dispatch(`${path}.${subPath}`, payload);
+	};
+
+	subStore.attach = function (subPath, middleware) {
+		if (!middleware) {
+			return store.attach(path, subPath);
+		}
+
+		return store.attach(`${path}.${subPath}`, middleware);
 	};
 
 	return subStore;
