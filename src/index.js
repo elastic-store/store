@@ -132,12 +132,6 @@ export const getSubStore = function (store, path) {
 		return getNode(store(), path);
 	};
 
-	subStore.actions = function (newActions) {
-		if (!newActions) {
-			return getNode(store.actions(), path);
-		}
-	};
-
 	subStore.dispatch = function (subPath, payload) {
 		return store.dispatch(`${path}.${subPath}`, payload);
 	};

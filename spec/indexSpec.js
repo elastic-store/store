@@ -427,10 +427,6 @@ describe("getSubStore", () => {
 			subStore = getSubStore(store, "todos");	
 		});
 
-		it("has 'actions' method.", () => {
-			expect(subStore.actions).to.exist;
-		});
-
 		it("has 'dispatch' method.", () => {
 			expect(subStore.dispatch).to.exist;
 		});
@@ -445,22 +441,6 @@ describe("getSubStore", () => {
 
 		it("throws if user tries to set state.", () => {
 			expect(subStore.bind(subStore, "new state")).to.throw(Error);
-		});
-
-		describe("actions", () => {
-			it("returns actions attached at the node where sub store works.", () => {
-				expect(subStore.actions()).to.equal(store.actions().todos);
-			});
-
-			it("attaches actions at the node where sub store works.", () => {
-				let newActions = {
-					add () {},
-					remove () {}
-				};
-
-				subStore.actions(newActions);
-				expect(store.actions().todos).to.equal(newActions);
-			});
 		});
 
 		describe("dispatch", () => {
