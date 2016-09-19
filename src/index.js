@@ -17,6 +17,7 @@ export const genStateTree = (tree, state = {}) => {
 	return state;
 };
 
+
 export const Store = function (actions = {}, middlewares = [], initialState = {}) {
 	let state = genStateTree(actions);
 	Object.assign(state, initialState);
@@ -113,4 +114,30 @@ export const Store = function (actions = {}, middlewares = [], initialState = {}
 	};
 
 	return newStore;
+};
+
+
+export const getNode = function (store, path) {
+	let subStore = function () {
+		// Throw if user tries to set state
+		let nodes = path.split(".");
+		return nodes.reduce((subState, node) => {
+			return subState[node];
+		}, store());
+	};
+
+	subStore.actions = function () {
+		// Throw if user tries to get actions
+		return store.actions();
+	};
+
+	subStore.dispatch = function (subPath) {
+		return store.dispatch(`${path}.${subPath}`);
+	};
+
+	subStore.attach = function (subPath) {
+		return store.attach(`${path}.${subPath}`);
+	};
+
+	return subStore;
 };

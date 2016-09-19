@@ -1,4 +1,4 @@
-import {Store, initStateLeaves, genStateTree} from "./../src/index.js";
+import {Store, genStateTree, getNode} from "./../src/index.js";
 import {expect} from "chai";
 
 describe("genStateTree", () => {
@@ -393,5 +393,50 @@ describe("Store", () => {
 			let mid1 = astore.attach(()=>{});
 			expect(astore.middlewares()).to.eql([mid1]);
 		});
+	});
+});
+
+describe("getNode", () => {
+	let actions = {
+		todos: {
+			add () {}
+		},
+		notifications: {
+			list () {}
+		}
+	};
+		
+	it("returns a store wrapper which operates on specific node.", () => {
+		let store = Store(actions);
+		let node = getNode(store, "todos");
+		expect(typeof node).to.equal("function");
+	});
+
+	describe("aNode", () => {
+		let node;
+
+		beforeEach(() => {
+			let store = Store(actions);
+			node = getNode(store, "todos");	
+		});
+
+		it("has 'actions' method.", () => {
+			expect(node.actions).to.exist;
+		});
+
+		it("has 'dispatch' method.", () => {
+			expect(node.dispatch).to.exist;
+		});
+
+		it("has 'attach' method.", () => {
+			expect(node.attach).to.exist;
+		});
+
+		describe("actions", () => {});
+
+
+		describe("dispatch", () => {});
+
+		describe("attach", () => {});
 	});
 });
