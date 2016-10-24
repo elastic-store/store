@@ -180,6 +180,7 @@ describe("Store", () => {
 					return todos.concat(atodo);
 				}
 			};
+
 			astore = Store({todos: todosActions});
 		});
 
@@ -255,8 +256,10 @@ describe("Store", () => {
 		});
 
 		it("throws on invalid action", () => {
-			expect(astore.dispatch.bind(astore, "invalid.action")).to.throw(Error);
+			expect(astore.dispatch.bind(astore, "todos")).to.throw(Error);
+			expect(astore.dispatch.bind(astore, "path.404")).to.throw(Error);
 		});
+
 
 		it("can dispatch to nested actions", () => {
 			let actionTree = {

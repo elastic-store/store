@@ -53,6 +53,10 @@ export const Store = function (actions = {}, middlewares = [], initialState = {}
 
 					throw new TypeError();
 				}, actions);
+
+				if (typeof action !== "function") {
+					throw new TypeError();
+				}
 			}
 			catch (err) {
 				if (err instanceof TypeError) {
