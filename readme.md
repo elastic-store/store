@@ -123,9 +123,69 @@ let store = Store(actions, middlewares, initialState);
 ```
 
 ## Add actions
-## Dispatch action
-## Middlewares
-## Attach Middleware
-## Detach Middleware
-### Custom middleware
+### Syntax
+```javascript`
+astore.actions(actions);
+```
 
+### Example
+```javascript
+let commonActions = {...};
+
+let store = Store(commonActions);
+
+
+// attach new actions
+let newActions = {...};
+store.actions(newActions);
+```
+
+## Dispatch action
+### Syntax
+```javascript
+store.dispatch(actionPath, payload);
+```
+
+### Example
+```javascript
+let actions = {
+	todos: {
+		add (state, payload) {
+			return state.concat([payload]);
+		}
+	}
+};
+
+// dispatch
+store.dispatch("todos.add", {id: 1, text: "Demo action dispatch."});
+```
+
+## Middlewares
+### Attach Middleware
+
+Middlewares can be attached in two different ways:
+
+#### 1. while creating store
+```javascript
+let aStore = Store(actions, middleware);
+```
+
+#### 2. after creating store
+```javascript
+let attachedMiddleware = aStore.attach(middleware);
+```
+
+### Detach Middleware
+```javascript
+aattachedMiddlewar.detach();
+```
+
+### Custom middleware
+...
+
+
+## Setting initial values
+...
+
+## Setting initial state
+...
