@@ -51,11 +51,11 @@ console.log(store().todos);
 // => {todos: []}
 
 
-// A middleware to log changes in state
 let clone = (data) => {
 	return JSON.parse(JSON.stringify(data));
 };
 
+// A middleware to log changes in state
 let logger = (actionPath, next, store) => {
 	return (state, payload) => {
 		console.log("Before:", clone(state));
@@ -215,21 +215,72 @@ let aStore = Store(actions, middleware);
 ```
 
 #### 2. After creating store
-Middlewares attached to an instance of a store can act on every dispatch
-or on a particular dispatch.
+Middlewares attached to an instance acts 3 different ways depending on how they were attached.
 
-##### Syntax
+##### Acts globally
+A middleware can be attached globally,
+so that it can act upon any actions.
+
 ```javascript
-aStore.attach("path", middleware);
+let actions = {
+	todos: {
+		add (state, todo) {...},
+		remove (state, id) {...}
+	},
+	trash: {
+		add (state, todo) {...},
+		restore (state, id) {..}
+	}
+};
+
+let aStore = Store(actions);
+
+let clone = (data) => {
+	return JSON.parse(JSON.stringify(data));
+};
+
+// A middleware to log changes in state
+let logger = (actionPath, next, store) => {
+	return (state, payload) => {
+		console.log("Before:", clone(state));
+
+		let newState = next(state, payload);
+
+		console.log("After:", clone(newState);
+
+		return newState;
+	}
+}
+
+// acts globally i.e. on
+// todos.add
+// todos.remove
+// trash.add
+// trash.restore
+aStore.attach(logger);
 ```
 
-##### Example
+##### Acts on particular state node
+A middleware can be attached to a particular state node,
+so that it can act upon any actions within that node.
+
 ```javascript
-let attachedMiddleware = aStore.attach(middleware);
-let attachedMiddleware = aStore.attach("path", middleware);
+// acts on actions under 'todos' i.e.
+// todos.add
+// todos.remove
+aStore.attach("todos", logger);
 ```
 
-### Detach Middleware
+##### Acts on particular action
+A middleware can be attached to a particular action,
+so that it reacts to that single action.
+
+``` javascript
+// acts on the action 'todos.add'
+aStore.attach("todos.add", logger);
+```
+
+#### Detach Middleware
 Middlewares are detachable.
 
 ```javascript
