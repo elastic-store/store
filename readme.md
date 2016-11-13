@@ -138,12 +138,6 @@ let store = Store(actions, middlewares, initialState);
 store(); // returns the state
 ```
 
-## Get state
-### Syntax
-```javascript
-aStore();
-```
-
 ### Example
 ```javascript
 import {Store} from "elastic-store";
@@ -202,7 +196,7 @@ store.dispatch("todos.add", {id: 1, text: "Demo action dispatch."});
 ```
 
 ## Middlewares
-Middlewares in `elastic-store` are similar to that of (Express.js)[http://expressjs.com/].
+Middlewares in `elastic-store` are similar to that of [Express.js](http://expressjs.com/).
 
 ### Attach Middleware
 Middlewares can be attached in two different ways:
