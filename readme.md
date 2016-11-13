@@ -19,6 +19,7 @@ import {Store} from "elastic-store";
 // Create action tree
 let actions = {
 	todos: {
+		// initial value
 		init () {
 			return [];
 		},
@@ -31,8 +32,7 @@ let actions = {
 	}
 };
 
-// Create store with given actions and
-// apply the middleware to the root of state tree
+// Create store with given actions
 let store = Store(actions);
 
 // Add new todo
@@ -51,14 +51,18 @@ console.log(store().todos);
 // => {todos: []}
 
 
-// Create a logger
+// A middleware to log changes in state
+let clone = (data) => {
+	return JSON.parse(JSON.stringify(data));
+};
+
 let logger = (actionPath, next, store) => {
 	return (state, payload) => {
-		console.log("Before:", Object.assign({}, state));
+		console.log("Before:", clone(state));
 
 		let newState = next(state, payload);
 
-		console.log("After:", Object.assign({}, newState));
+		console.log("After:", clone(newState);
 
 		return newState;
 	}
@@ -115,6 +119,10 @@ let attachedRenderer = store.attach(renderer);
 attachedRenderer.detach();
 ```
 
+## Actions and state
+`elastic-store` generates state tree from action tree.
+...
+
 ## Create Store
 ```javascript
 import {Store} from "elastic-store";
@@ -122,9 +130,40 @@ import {Store} from "elastic-store";
 let store = Store(actions, middlewares, initialState);
 ```
 
-## Add actions
+## Get state
+```
+import {Store} from "elastic-store";
+
+let store = Store(actions, middlewares, initialState);
+store(); // returns the state
+```
+
+## Get state
 ### Syntax
-```javascript`
+```javascript
+aStore();
+```
+
+### Example
+```javascript
+import {Store} from "elastic-store";
+
+let aStore = Store(actions, middlewares, initialState);
+aStore(); // returns the state
+```
+
+## Add actions
+Actions can be added in two different ways.
+
+### 1. While creating store
+```javascript
+import {Store} from "elastic-store";
+
+let store = Store(actions);
+```
+
+### 2. After creating store
+```javascript
 astore.actions(actions);
 ```
 
@@ -141,6 +180,8 @@ store.actions(newActions);
 ```
 
 ## Dispatch action
+Changes to state are made by dispatching messages to actions.
+
 ### Syntax
 ```javascript
 store.dispatch(actionPath, payload);
@@ -161,21 +202,36 @@ store.dispatch("todos.add", {id: 1, text: "Demo action dispatch."});
 ```
 
 ## Middlewares
-### Attach Middleware
+Middlewares in `elastic-store` are similar to that of (Express.js)[http://expressjs.com/].
 
+### Attach Middleware
 Middlewares can be attached in two different ways:
 
-#### 1. while creating store
+#### 1. While creating store
+Middlewares attached while creating a store are globally applied.
+
 ```javascript
 let aStore = Store(actions, middleware);
 ```
 
-#### 2. after creating store
+#### 2. After creating store
+Middlewares attached to an instance of a store can act on every dispatch
+or on a particular dispatch.
+
+##### Syntax
+```javascript
+aStore.attach("path", middleware);
+```
+
+##### Example
 ```javascript
 let attachedMiddleware = aStore.attach(middleware);
+let attachedMiddleware = aStore.attach("path", middleware);
 ```
 
 ### Detach Middleware
+Middlewares are detachable.
+
 ```javascript
 aattachedMiddlewar.detach();
 ```
