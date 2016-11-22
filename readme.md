@@ -121,7 +121,43 @@ attachedRenderer.detach();
 
 ## Actions and state
 `elastic-store` generates state tree from action tree.
-...
+
+The action tree below generates the state tree that follows it.
+
+```javascript
+// action tree
+let actions = {
+	todos: {
+		allResolved: {
+			// default value for this node
+			init () { return false; },
+			toggle (prevState) { ... }
+		},
+		items: {
+			// default value for this node
+			init () { return []; },
+			add (notifications, newOne) { ... },
+			remove (notifications, id) { ... },
+	   }
+    },
+	notifications: {
+		init () {
+			return [];
+		}
+		add (notifications, newOne) { ... },
+		dismiss (notifications, newOne) { ... }
+   }
+};
+
+// state tree
+{
+	todos: {
+		allResolved: false,
+		items: []
+	},
+	notifications: []
+}
+```
 
 ## Create Store
 ```javascript
@@ -131,12 +167,7 @@ let store = Store(actions, middlewares, initialState);
 ```
 
 ## Get state
-```
-import {Store} from "elastic-store";
-
-let store = Store(actions, middlewares, initialState);
-store(); // returns the state
-```
+The store instance is a function. Invoke it to get the state in it.
 
 ### Example
 ```javascript
@@ -205,7 +236,7 @@ Middlewares can be attached in two different ways:
 Middlewares attached while creating a store are globally applied.
 
 ```javascript
-let aStore = Store(actions, middleware);
+let aStore = Store(actions, middlewares);
 ```
 
 #### 2. After creating store
