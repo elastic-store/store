@@ -10,7 +10,13 @@ A simple and flexible state container.
 - supports late middleware binding
 
 ## Installation
+```javascript
+// ES6
+import {Store} from "elastic-store";
 
+// node
+var Store = require("elastic-store").Store;
+```
 
 ## Walkthrough
 ```javascript
@@ -355,7 +361,7 @@ let actions = {
 ```
 
 ## Setting initial state
-Initial state of a state can be set while creating one.
+Initial state of a store can be set while creating one.
 
 ```javascript
 let initialState = {
