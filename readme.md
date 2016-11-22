@@ -46,14 +46,14 @@ store.dispatch("todos.add", {id: 1, task: "Demo dispatch"});
 
 
 // Get todos
-console.log(store().todos);
+console.log(store());
 // => {todos: [{id: 1, task: "Demo dispatch"}]}
 
 // Remove a todo
 store.dispatch("todos.remove", 1);
 
 // Get todos
-console.log(store().todos);
+console.log(store());
 // => {todos: []}
 
 
