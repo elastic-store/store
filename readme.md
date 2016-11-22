@@ -313,11 +313,63 @@ aattachedMiddlewar.detach();
 ```
 
 ### Custom middleware
-...
+A middleware has following signature:
+
+```javascript
+/*
+* actionPath: Dot separated path to an action in the action tree
+* action: The action at the action path, which changes data
+* store: The store
+*/
+let aMiddleware = (actionPath, action, store) => {
+	/*
+	* state: The entire state tree, returned by store()
+	* payload: The payload for the action
+	*			e.g. 'somePayload' in 'store.dispatch("action.path", somePayload)'
+	*/
+	return (state, payload) => {
+		//...
+
+		let newState = action(state, payload);
+		
+		//...
+
+		return newState;
+	}
+}
+```
 
 
 ## Setting initial values
-...
+Each state node can have initial value. Actions can have `init()` method which returns the initial value.
+
+```javascript
+let actions = {
+	todos: {
+		// initial value for this node
+		init () { return []; },
+		add () { ... },
+		remove () { ... }
+	}
+};
+```
 
 ## Setting initial state
-...
+Initial state of a state can be set while creating one.
+
+```javascript
+let initialState = {
+	todos: [
+		{id: 1, todo: "Do something awesome."}
+	]
+};
+
+let actions = {
+	todos: {
+		add () { ... },
+		remove () { ... }
+	}
+};
+
+let aStore = Store(actions, middlewares, initialState);
+```
