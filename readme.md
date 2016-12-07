@@ -288,7 +288,7 @@ let logger = (actionPath, next, store) => {
 // todos.remove
 // trash.add
 // trash.restore
-aStore.attach(logger);
+let attachedMiddleware = aStore.attach(logger);
 ```
 
 ##### Acts on particular state node
@@ -299,7 +299,7 @@ so that it can act upon any actions within that node.
 // acts on actions under 'todos' i.e.
 // todos.add
 // todos.remove
-aStore.attach("todos", logger);
+let attachedMiddleware = aStore.attach("todos", logger);
 ```
 
 ##### Acts on particular action
@@ -308,14 +308,14 @@ so that it reacts to that single action.
 
 ``` javascript
 // acts on the action 'todos.add'
-aStore.attach("todos.add", logger);
+let attachedMiddleware = aStore.attach("todos.add", logger);
 ```
 
 #### Detach Middleware
 Middlewares are detachable.
 
 ```javascript
-aattachedMiddlewar.detach();
+attachedMiddlewar.detach();
 ```
 
 ### Custom middleware
