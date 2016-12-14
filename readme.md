@@ -10,6 +10,11 @@ A simple and flexible state container.
 - supports late middleware binding
 
 ## Installation
+```shell
+$ npm install --save elastic-store
+```
+
+## Usage
 ```javascript
 // ES6
 import {Store} from "elastic-store";
