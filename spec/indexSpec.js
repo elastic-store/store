@@ -375,6 +375,18 @@ describe("Store", () => {
 			returnVal = todosAddMiddleware("todos.add", action)("previousState", "payload");
 			expect(middlewareLog).to.eql(["todos.add", "previousState", "payload"]);
 			expect(returnVal).to.eql(["previousState", "payload"]);
+
+			// multiple patch
+			let todosAddRemoveMiddleware = astore.attach(["todos.add", "todos.remove"], middleware);
+			expect(todoMiddleware).to.exist;
+
+			returnVal = todosAddRemoveMiddleware("todos.add", action)("previousState", "payload");
+			expect(middlewareLog).to.eql(["todos.add", "previousState", "payload"]);
+			expect(returnVal).to.eql(["previousState", "payload"]);
+
+			returnVal = todosAddRemoveMiddleware("todos.remove", action)("previousState", "payload");
+			expect(middlewareLog).to.eql(["todos.remove", "previousState", "payload"]);
+			expect(returnVal).to.eql(["previousState", "payload"]);
 		});
 
 		it("can be detached from middleware pool.", () => {
@@ -395,111 +407,6 @@ describe("Store", () => {
 			let astore = Store(actions);
 			let mid1 = astore.attach(()=>{});
 			expect(astore.middlewares()).to.eql([mid1]);
-		});
-	});
-});
-
-describe("getSubStore", () => {
-	let actions = {
-		todos: {
-			add (prevState = [], payload) {
-				return prevState.concat(payload);
-			}
-		},
-		notifications: {
-			add () {}
-		}
-	};
-
-	it("returns a store wrapper which operates on specific node.", () => {
-		let store = Store(actions);
-		let subStore = getSubStore(store, "todos");
-		expect(typeof subStore).to.equal("function");
-	});
-
-	describe("subStore", () => {
-		let store, subStore;
-
-		beforeEach(() => {
-			let initialState = {
-				todos: ["Todo 1"],
-				notifications: ["Notification 1"]
-			};
-
-			store = Store(actions, [], initialState);
-			subStore = getSubStore(store, "todos");	
-		});
-
-		it("has 'dispatch' method.", () => {
-			expect(subStore.dispatch).to.exist;
-		});
-
-		it("has 'attach' method.", () => {
-			expect(subStore.attach).to.exist;
-		});
-
-		it("returns sub state", () => {
-			expect(subStore()).to.eql(store().todos);
-		});
-
-		it("throws if user tries to set state.", () => {
-			expect(subStore.bind(subStore, "new state")).to.throw(Error);
-		});
-
-		describe("dispatch", () => {
-			it("appends subPath to the path where sub store works.", () => {
-				subStore.dispatch("add", ["New Todo"]);
-
-				expect(subStore()).to.eql(["Todo 1", "New Todo"]);
-			});
-		});
-
-		describe("attach", () => {
-			let mid, log;
-
-			beforeEach(() => {
-				mid = (path, next, store) => {
-					return (prevState, payload) => {
-						log = payload;
-						return next(prevState, payload);
-					};
-				};
-			});
-
-			it("attaches middleware to the node where store works.", () => {
-				subStore.attach(mid);
-				store.dispatch("todos.add", "New todo");
-				expect(log).to.equal("New todo");
-
-				log = undefined;
-				store.dispatch("notifications.add", "New notification");
-				expect(log).to.not.exist;
-			});
-
-			it("attaches middleware to the sub node", () => {
-				let newActions = {
-					todos: {
-						list: {
-							add (prevState = [], payload) {
-								return prevState.concat(payload);
-							}
-						},
-						allDone: {
-							toggle () {}
-						}
-					}
-				};
-
-				store.actions(newActions);
-				subStore.attach("list", mid);
-
-				store.dispatch("todos.list.add", "New todo");
-				expect(log).to.equal("New todo");
-
-				log = undefined;
-				store.dispatch("todos.allDone.toggle");
-				expect(log).to.not.exist;
-			});
 		});
 	});
 });
