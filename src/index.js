@@ -4,10 +4,18 @@ function isObject (data) {
 
 export const Store = function (actions, rootMiddlewares = [], initialState = {}) {
 	let middlewares = rootMiddlewares.map((middleware) => {
-		return ["", middleware];
+		if (typeof middleware === "function") {
+			return ["", middleware];
+		}
+
+		return middleware
 	});
 
-	let newStore = {};
+	let newStore =
+		{ applyMiddleware: function (path, middleware) {}
+		, getState: function () {}
+		, addNode: function (nodeName, actions) {}
+		, removeNode: function (nodeName) {} }
 
 	function wrapActions (destination, target, pathFrags = []) {
 		for (let prop in target) {

@@ -15,9 +15,10 @@ let logger = (next, store, path) => {
 }
 
 describe("Store", () => {
-	it("wraps action with middlewares", () => {
-		let middlewares = [logger];
-		let actions = {
+	let store, actions, mid1, mid1Log, mid2, mid2Log;
+
+	beforeEach(() => {
+		actions = {
 			user: {
 				list: [],
 				add (user) {
@@ -31,13 +32,61 @@ describe("Store", () => {
 					this.tasks = this.tasks.concat(task);
 				}
 			}
+		};
+
+		mid1 = (next, store, path) => {
+			return (arg) => {
+				mid1Log = [next, store, path, arg];
+				next(arg);
+			}
 		}
 
-		let store = new Store(actions, middlewares);
+		mid2 = (next, store, path) => {
+			return (arg) => {
+				mid2Log = [next, store, path, arg];
+				next(arg);
+			}
+		}
+
+		store = new Store(actions, [mid1, mid2]);
+	});
+
+	it("actions are accessibale", () => {
 		store.user.add("user 1");
 		store.todo.add("task 1");
+
 		expect(store.user.list.length).to.equal(1);
 		expect(store.todo.tasks.length).to.equal(1);
+	});
+
+	it("actions are wrapped with middlewares", () => {
+		store.user.add("user 1");
+
+		expect(mid1Log.length).to.equal(4);
+		expect(typeof mid1Log[0]).to.equal("function")
+		expect(mid1Log[1]).to.equal(store);
+		expect(mid1Log[2]).to.equal("user.add");
+		expect(mid1Log[3]).to.equal("user 1");
+
+		expect(mid2Log.length).to.equal(4);
+		expect(typeof mid1Log[0]).to.equal("function")
+		expect(mid2Log[1]).to.equal(store);
+		expect(mid2Log[2]).to.equal("user.add");
+		expect(mid2Log[3]).to.equal("user 1");
+	});
+
+	it("middlewares are applied at particular path", () => {
+		let store = new Store(actions, [mid1, ["user.add", mid2]]);
+
+		store.user.add("user 1");
+		expect(mid1Log.length).to.equal(4);
+		expect(mid2Log.length).to.equal(4);
+
+		mid1Log = null;
+		mid2Log = null;
+		store.todo.add("task 1");
+		expect(mid1Log.length).to.equal(4);
+		expect(mid2Log).to.equal(null);
 	});
 });
 
