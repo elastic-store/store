@@ -88,6 +88,50 @@ describe("Store", () => {
 		expect(mid1Log.length).to.equal(4);
 		expect(mid2Log).to.equal(null);
 	});
+
+	describe("addNode", () => {
+		let notification;
+
+		beforeEach(() => {
+			notification = store.addNode("notification", {
+				list: [],
+				add (notification) {
+					this.list = this.list.concat([notification]);
+				}
+			});
+		});
+
+		it("returns the attached node", () => {
+			expect(notification).to.exit;
+		});
+
+		it("addes node to store", () => {
+			notification.add("notification 1");
+
+			expect(notification.list).to.eql(["notification 1"]);
+		});
+
+		it("wraps actions with middlewares", () => {
+			notification.add("notification 1");
+
+			expect(mid1Log[3]).to.equal("notification 1");
+		});
+	});
+
+	describe("removeNode", () => {
+		beforeEach(() => {
+			store.applyMiddleware("todo", mid1);
+			store.removeNode("todo");
+		});
+
+		it("removes the node from store", () => {
+			expect(store.todo).to.not.exist;
+		});
+
+		it("clears middlewares applied to the node", () => {
+			expect(store.getMiddlewares()).to.eql([["", mid1], ["", mid2]]);
+		});
+	});
 });
 
 // describe("genStateTree", () => {

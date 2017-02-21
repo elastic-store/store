@@ -12,10 +12,23 @@ export const Store = function (actions, rootMiddlewares = [], initialState = {})
 	});
 
 	let newStore =
-		{ applyMiddleware: function (path, middleware) {}
-		, getState: function () {}
-		, addNode: function (nodeName, actions) {}
-		, removeNode: function (nodeName) {} }
+		{ applyMiddleware (path, middleware) {
+				middlewares.push([path, middleware]);
+			}
+		, clearMiddlewares (path) {}
+		, getMiddlewares () {
+				return middlewares;
+			}
+		, addNode (nodeName, actions) {
+				newStore[nodeName] = wrapActions({}, actions, [nodeName]);
+				return newStore[nodeName];
+			}
+		, removeNode (nodeName) {
+				delete newStore[nodeName];
+				middlewares = middlewares.filter((middleware) => {
+					return middleware[0].indexOf(nodeName) === -1;
+				});
+			}}
 
 	function wrapActions (destination, target, pathFrags = []) {
 		for (let prop in target) {
@@ -25,8 +38,7 @@ export const Store = function (actions, rootMiddlewares = [], initialState = {})
 				pathFrags.push(`${prop}`);
 
 				if (isObject(property)) {
-					destination[prop] = {};
-					destination[prop] = wrapActions(destination[prop], property, pathFrags);
+					destination[prop] = wrapActions({}, property, pathFrags);
 				}
 				else if (typeof property === "function") {
 					let pathStr = [].concat(pathFrags).join(".");
