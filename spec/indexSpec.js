@@ -89,6 +89,29 @@ describe("Store", () => {
 		expect(mid2Log).to.equal(null);
 	});
 
+	it("applies initial state", () => {
+		let actions = {
+			todo: {
+				list: [],
+				add (task) {
+					this.list = this.list.concat([task]);
+				}
+			}
+		};
+		let initialState = {
+			todo: {
+				list: ["task 1"],
+				allResolved: false
+			}
+		}
+
+		let store = new Store(actions, [], initialState);
+
+		expect(store.todo.list).to.eql(["task 1"]);
+		expect(store.todo.allResolved).to.equal(false);
+		expect(typeof store.todo.add).to.equal("function");
+	});
+
 	describe("addNode", () => {
 		let notification;
 

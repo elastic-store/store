@@ -15,7 +15,9 @@ export const Store = function (actions, rootMiddlewares = [], initialState = {})
 		return middleware
 	});
 
-	let newStore =
+	let newStore = initialState;
+	newStore = Object.assign(
+		initialState,
 		{ applyMiddleware (newMiddlewares) {
 				if (!isArray(newMiddlewares)) {
 					throw Error("Please pass a middleware.");
@@ -44,7 +46,7 @@ export const Store = function (actions, rootMiddlewares = [], initialState = {})
 				return middlewares;
 			}
 		, addNode (nodeName, actions) {
-				newStore[nodeName] = wrapActions({}, actions, [nodeName]);
+				newStore[nodeName] = wrapActions(newStore[nodeName] || {}, actions, [nodeName]);
 				return newStore[nodeName];
 			}
 		, removeNode (nodeName) {
@@ -52,7 +54,7 @@ export const Store = function (actions, rootMiddlewares = [], initialState = {})
 				middlewares = middlewares.filter((middleware) => {
 					return middleware[0].indexOf(nodeName) === -1;
 				});
-			}}
+			}});
 
 	function wrapActions (destination, target, pathFrags = []) {
 		for (let prop in target) {
@@ -62,7 +64,8 @@ export const Store = function (actions, rootMiddlewares = [], initialState = {})
 				pathFrags.push(`${prop}`);
 
 				if (isObject(property)) {
-					destination[prop] = wrapActions({}, property, pathFrags);
+					destination[prop] =
+						wrapActions(destination[prop] || {}, property, pathFrags);
 				}
 				else if (typeof property === "function") {
 					let pathStr = [].concat(pathFrags).join(".");
@@ -78,7 +81,7 @@ export const Store = function (actions, rootMiddlewares = [], initialState = {})
 					}
 				}
 				else {
-					destination[prop] = property;
+					destination[prop] = destination[prop] || property;
 				}
 
 				pathFrags.pop();
