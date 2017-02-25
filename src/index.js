@@ -1,12 +1,12 @@
-function isObject (data) {
+function isObject(data) {
 	return Object.prototype.toString.call(data) === "[object Object]";
 }
 
-function isArray (data) {
+function isArray(data) {
 	return Array.isArray(data);
 }
 
-export const Store = function (actions, rootMiddlewares = [], initialState = {}) {
+export const Store = function(actions, rootMiddlewares = [], initialState = {}) {
 	let middlewares = rootMiddlewares.map((middleware) => {
 		if (typeof middleware === "function") {
 			return ["", middleware];
@@ -17,46 +17,47 @@ export const Store = function (actions, rootMiddlewares = [], initialState = {})
 
 	let newStore = initialState;
 	newStore = Object.assign(
-		initialState,
-		{ applyMiddleware (newMiddlewares) {
+		initialState, {
+			applyMiddleware(newMiddlewares) {
 				if (!isArray(newMiddlewares)) {
 					throw Error("Please pass a middleware.");
 				}
 
-				middlewares = isArray(newMiddlewares[0])
-					? middlewares.concat(newMiddlewares)
-					: middlewares.concat([newMiddlewares]);
-			}
-		, unapplyMiddleware (middlewaresToBeRemoved) {
+				middlewares = isArray(newMiddlewares[0]) ?
+					middlewares.concat(newMiddlewares) :
+					middlewares.concat([newMiddlewares]);
+			},
+			unapplyMiddleware(middlewaresToBeRemoved) {
 				if (!isArray(middlewaresToBeRemoved)) {
 					throw Error("Please pass a middleware.");
 				}
 
-				middlewaresToBeRemoved = isArray(middlewaresToBeRemoved[0])
-					? middlewaresToBeRemoved
-					: [middlewaresToBeRemoved]
+				middlewaresToBeRemoved = isArray(middlewaresToBeRemoved[0]) ?
+					middlewaresToBeRemoved :
+					[middlewaresToBeRemoved]
 
 				middlewares = middlewares.filter((middleware) => {
 					return !middlewaresToBeRemoved.some((mid) => {
 						return mid[0] === middleware[0] && mid[1] === middleware[1];
 					});
 				});
-			}
-		, getMiddlewares () {
+			},
+			getMiddlewares() {
 				return middlewares;
-			}
-		, addNode (nodeName, actions) {
+			},
+			addNode(nodeName, actions) {
 				newStore[nodeName] = wrapActions(newStore[nodeName] || {}, actions, [nodeName]);
 				return newStore[nodeName];
-			}
-		, removeNode (nodeName) {
+			},
+			removeNode(nodeName) {
 				delete newStore[nodeName];
 				middlewares = middlewares.filter((middleware) => {
 					return middleware[0].indexOf(nodeName) === -1;
 				});
-			}});
+			}
+		});
 
-	function wrapActions (destination, target, pathFrags = []) {
+	function wrapActions(destination, target, pathFrags = []) {
 		for (let prop in target) {
 			if (target.hasOwnProperty(prop)) {
 
@@ -66,11 +67,10 @@ export const Store = function (actions, rootMiddlewares = [], initialState = {})
 				if (isObject(property)) {
 					destination[prop] =
 						wrapActions(destination[prop] || {}, property, pathFrags);
-				}
-				else if (typeof property === "function") {
+				} else if (typeof property === "function") {
 					let pathStr = [].concat(pathFrags).join(".");
 
-					destination[prop] = function (arg) {
+					destination[prop] = function(arg) {
 						let wrappedAction = middlewares
 							.filter((middleware) => pathStr.indexOf(middleware[0]) !== -1)
 							.reduceRight((next, middleware) => {
@@ -79,8 +79,7 @@ export const Store = function (actions, rootMiddlewares = [], initialState = {})
 
 						return wrappedAction(arg);
 					}
-				}
-				else {
+				} else {
 					destination[prop] = destination[prop] || property;
 				}
 

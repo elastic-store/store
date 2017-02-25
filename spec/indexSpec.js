@@ -1,5 +1,9 @@
-import {Store} from "./../src/index.js";
-import {expect} from "chai";
+import {
+	Store
+} from "./../src/index.js";
+import {
+	expect
+} from "chai";
 
 let clone = (data) => {
 	return JSON.parse(JSON.stringify(data));
@@ -21,14 +25,14 @@ describe("Store", () => {
 		actions = {
 			user: {
 				list: [],
-				add (user) {
+				add(user) {
 					this.list = this.list.concat(user);
 				}
 			},
 			todo: {
 				tasks: [],
 				allResolved: false,
-				add (task) {
+				add(task) {
 					this.tasks = this.tasks.concat(task);
 				}
 			}
@@ -93,7 +97,7 @@ describe("Store", () => {
 		let actions = {
 			todo: {
 				list: [],
-				add (task) {
+				add(task) {
 					this.list = this.list.concat([task]);
 				}
 			}
@@ -118,7 +122,7 @@ describe("Store", () => {
 		beforeEach(() => {
 			notification = store.addNode("notification", {
 				list: [],
-				add (notification) {
+				add(notification) {
 					this.list = this.list.concat([notification]);
 				}
 			});
@@ -152,7 +156,10 @@ describe("Store", () => {
 		});
 
 		it("clears middlewares applied to the node", () => {
-			expect(store.getMiddlewares()).to.eql([["", mid1], ["", mid2]]);
+			expect(store.getMiddlewares()).to.eql([
+				["", mid1],
+				["", mid2]
+			]);
 		});
 	});
 
@@ -172,7 +179,10 @@ describe("Store", () => {
 		});
 
 		it("applies multiple middlewares.", () => {
-			store.applyMiddleware([["user", mid1], ["todo", mid2]]);
+			store.applyMiddleware([
+				["user", mid1],
+				["todo", mid2]
+			]);
 
 			let middlewares = store.getMiddlewares();
 			expect(middlewares.length).to.equal(4);
@@ -203,7 +213,10 @@ describe("Store", () => {
 		});
 
 		it("unapplies multiple middlewares", () => {
-			store.unapplyMiddleware([["", mid1], ["", mid2]]);
+			store.unapplyMiddleware([
+				["", mid1],
+				["", mid2]
+			]);
 
 			let middlewares = store.getMiddlewares();
 			expect(middlewares.length).to.equal(0);
