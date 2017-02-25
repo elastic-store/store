@@ -27,39 +27,42 @@ var Store = require("elastic-store").Store;
 ```javascript
 import {Store} from "elastic-store";
 
+// todo state handler
+
+class TodoHandler {
+	list = []
+
+	add (newTodo) {
+		return this.list.concat([newTodo]);
+	}
+
+	remove (id) {
+		return this.list.filter((todo) => { todo.id !== id});
+	}
+}
+
 // Create action tree
 let actions = {
-	todos: {
-		// initial value
-		init () {
-			return [];
-		},
-		add (todos, newTodo) {
-			return todos.concat([newTodo]);
-		},
-		remove (todos, id) {
-			return todos.filter((todo) => { todo.id !== id});
-		}
-	}
+	todo: new TodoHandler()
 };
 
 // Create store with given actions
 let store = Store(actions);
 
 // Add new todo
-store.dispatch("todos.add", {id: 1, task: "Demo dispatch"});
+store.todo.add({id: 1, task: "Demo dispatch"});
 
 
 // Get todos
-console.log(store());
-// => {todos: [{id: 1, task: "Demo dispatch"}]}
+console.log(store.todo);
+// => {list: [{id: 1, task: "Demo dispatch"}]}
 
 // Remove a todo
-store.dispatch("todos.remove", 1);
+store.todo.remove(1);
 
 // Get todos
-console.log(store());
-// => {todos: []}
+console.log(store.todo);
+// => {list: []}
 
 
 let clone = (data) => {
@@ -85,7 +88,7 @@ let logger = (actionPath, next, store) => {
 let attachedLogger = store.attach("todos.add", logger);
 
 store.dispatch("todos.add", {id: 2, task: "Demo middleware."});
-// => 
+// =>
 // Before: {todos: []}
 // After: {todos: [{id: 2, task: "Demo middleware."}]};
 
@@ -99,12 +102,12 @@ let attachedLogger = store.attach(logger);
 
 
 store.dispatch("todos.add", {id: 2, task: "Demo middleware."});
-// => 
+// =>
 // Before: {todos: []}
 // After: {todos: [{id: 2, task: "Demo middleware."}]};
 
 store.dispatch("todos.remove", 2);
-// => 
+// =>
 // Before: {todos: [{id: 2, task: "Demo middleware."}]};
 // After: {todos: []}
 
@@ -342,7 +345,7 @@ let aMiddleware = (actionPath, action, store) => {
 		//...
 
 		let newState = action(state, payload);
-		
+
 		//...
 
 		return newState;

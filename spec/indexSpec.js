@@ -79,6 +79,8 @@ describe("Store", () => {
 		expect(mid2Log[3]).to.equal("user 1");
 	});
 
+	it("works with class based handlers");
+
 	it("middlewares are applied at particular path", () => {
 		let store = new Store(actions, [mid1, ["user.add", mid2]]);
 
