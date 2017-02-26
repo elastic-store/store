@@ -27,96 +27,85 @@ var Store = require("elastic-store").Store;
 ```javascript
 import {Store} from "elastic-store";
 
-// todo state handler
-
-class TodoHandler {
-	list = []
-
-	add (newTodo) {
-		return this.list.concat([newTodo]);
-	}
-
+let todoHandler = {
+	list: [],
+	add (task) {
+		this.list = this.list.concat([task]);
+	},
 	remove (id) {
-		return this.list.filter((todo) => { todo.id !== id});
+		this.list = this.list.filter((task) => task.id !== id);
 	}
 }
 
-// Create action tree
 let actions = {
-	todo: new TodoHandler()
+	todo: todoHandler
 };
 
-// Create store with given actions
-let store = Store(actions);
 
-// Add new todo
-store.todo.add({id: 1, task: "Demo dispatch"});
+let store = new Store(actions);
 
+store.todo.add({id: 1, task: "task 1"});
+console.log(store.todo.list);
+// =>
+// [ { id: 1, task: 'task 1' } ]
 
-// Get todos
-console.log(store.todo);
-// => {list: [{id: 1, task: "Demo dispatch"}]}
-
-// Remove a todo
 store.todo.remove(1);
-
-// Get todos
-console.log(store.todo);
-// => {list: []}
+console.log(store.todo.list);
+// =>
+// []
 
 
 let clone = (data) => {
-	return JSON.parse(JSON.stringify(data));
-};
+  return JSON.parse(JSON.stringify(data));
+}
 
 // A middleware to log changes in state
-let logger = (actionPath, next, store) => {
-	return (state, payload) => {
-		console.log("Before:", clone(state));
-
-		let newState = next(state, payload);
-
-		console.log("After:", clone(newState);
-
-		return newState;
+let logger = (next, store, path) => {
+	return (arg) => {
+		console.log("path:", path);
+		console.log("before:", clone(store));
+		let returnedValue = next(arg);
+		console.log("after:", clone(store));
 	}
 }
 
-
-// Attach logger to 'todos.add' action
+// Attach logger to 'todo.add' action
 // so that it only logs state changes made by this action
-let attachedLogger = store.attach("todos.add", logger);
+store.applyMiddleware(["todo.add", logger]);
 
-store.dispatch("todos.add", {id: 2, task: "Demo middleware."});
+store.todo.add({id: 2, task: "Demo middleware."});
 // =>
-// Before: {todos: []}
-// After: {todos: [{id: 2, task: "Demo middleware."}]};
+// path: todo.add
+// before: { todo: { list: [ [] ] } }
+// after: { todo: { list: [ {id: 2, task: "Demo middleware."} ] } }
 
-store.dispatch("todos.remove", 2); // won't log changes made by this action
+store.todo.remove(2); // won't log changes made by this action
 
 // Detach logger
-attachedLogger.detach();
+store.unapplyMiddleware(["todo.add", logger]);
 
 // Apply logger globally so that state changes made by every actions is logged.
-let attachedLogger = store.attach(logger);
+store.applyMiddleware(["", logger]);
 
 
-store.dispatch("todos.add", {id: 2, task: "Demo middleware."});
+store.todo.add({id: 2, task: "Demo middleware."});
 // =>
-// Before: {todos: []}
-// After: {todos: [{id: 2, task: "Demo middleware."}]};
+// path: todo.add
+// before: { todo: { list: [] } }
+// after: { todo: { list: [ {id: 2, task: "Demo middleware."} ] } }
 
-store.dispatch("todos.remove", 2);
+store.todo.remove(2);
 // =>
-// Before: {todos: [{id: 2, task: "Demo middleware."}]};
-// After: {todos: []}
+// path: todo.remove
+// before: { todo: { list: [ {id: 2, task: "Demo middleware."} ] } }
+// after: { todo: { list: [] } }
 
 
 // Use this state to render UI?
 // Create a renderer middleware
-let renderer = (actionPath, next, store) => {
-	return (state, payload) => {
-		let newState = next(state, payload);
+let renderer = (next, store, path) => {
+	return (arg) => {
+		let newState = next(arg);
 
 		aViewFramework.render(document.body, aComponent, newState);
 
@@ -124,13 +113,12 @@ let renderer = (actionPath, next, store) => {
 	}
 };
 
-
 // Apply it globally
-let attachedRenderer = store.attach(renderer);
+store.applyMiddleware(["", renderer]);
 
 // Now every changes to state are rendered
 // To stop rendering the changes just detach the middleware
-attachedRenderer.detach();
+store.unapplyMiddleware(["", renderer]);
 ```
 
 ## Actions and state
