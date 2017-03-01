@@ -37,12 +37,12 @@ let todoHandler = {
 	}
 }
 
-let actions = {
+let nodes = {
 	todo: todoHandler
 };
 
 
-let store = new Store(actions);
+let store = new Store(nodes);
 
 store.todo.add({id: 1, task: "task 1"});
 console.log(store.todo.list);
@@ -165,7 +165,7 @@ let actions = {
 ```javascript
 import {Store} from "elastic-store";
 
-let store = Store(actions, middlewares, initialState);
+let store = Store(nodes, middlewares, initialState);
 ```
 
 ## Get state
@@ -179,14 +179,16 @@ let aStore = Store(actions, middlewares, initialState);
 aStore(); // returns the state
 ```
 
-## Add actions
+## Add nodes
 Actions can be added in two different ways.
 
 ### 1. While creating store
 ```javascript
 import {Store} from "elastic-store";
 
-let store = Store(actions);
+let nodes = {...};
+
+let store = Store(nodes);
 ```
 
 ### 2. After creating store

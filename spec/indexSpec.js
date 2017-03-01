@@ -147,6 +147,20 @@ describe("Store", () => {
 		});
 	});
 
+	describe("addNodes", () => {
+		it("addes all the given nodes to store", () => {
+			let nodes = {
+				notification: {},
+				feed: {}
+			};
+
+			store.addNodes(nodes);
+
+			expect(store.notification).to.exist;
+			expect(store.feed).to.exist;
+		});
+	});
+
 	describe("removeNode", () => {
 		beforeEach(() => {
 			store.applyMiddleware(["todo", mid1]);
@@ -162,6 +176,28 @@ describe("Store", () => {
 				["", mid1],
 				["", mid2]
 			]);
+		});
+	});
+
+	describe("removeNodes", () => {
+		beforeEach(() => {
+			let nodes = {
+				notification: {},
+				feed: {}
+			};
+
+			store.addNodes(nodes);
+
+			expect(store.notification).to.exist;
+			expect(store.feed).to.exist;
+		});
+
+		it("removes specified nodes", () => {
+			store.removeNodes(["notification", "feed"]);
+
+			expect(store.notification).to.not.exist;
+			expect(store.feed).to.not.exist;
+			expect(store.user).to.exist;
 		});
 	});
 

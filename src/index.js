@@ -46,14 +46,29 @@ export const Store = function(actions, rootMiddlewares = [], initialState = {}) 
 				return middlewares;
 			},
 			addNode(nodeName, actions) {
-				newStore[nodeName] = wrapActions(newStore[nodeName] || {}, actions, [nodeName]);
+				newStore[nodeName] = wrapActions({}, actions, [nodeName]);
 				return newStore[nodeName];
 			},
+			addNodes(nodes) {
+				// TODO: check if its object
+				for (let key in nodes) {
+					if (nodes.hasOwnProperty(key)) {
+						newStore.addNode(key, nodes[key]);
+					}
+				}
+			},
 			removeNode(nodeName) {
+				// TODO: throw proper error if key does not exists
 				delete newStore[nodeName];
 				middlewares = middlewares.filter((middleware) => {
 					return middleware[0].indexOf(nodeName) === -1;
 				});
+			},
+			removeNodes(nodes) {
+				// TODO: check if its array
+				for (let i = 0; i < nodes.length; i ++) {
+					newStore.removeNode(nodes[i]);
+				}
 			}
 		});
 
