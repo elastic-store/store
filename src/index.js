@@ -18,7 +18,7 @@ export const Store = function(nodes, rootMiddlewares = [], initialState = {}) {
 	let newStore = initialState;
 	newStore = Object.assign(
 		initialState, {
-			applyMiddleware(newMiddlewares) {
+			applyMiddlewares(newMiddlewares) {
 				if (!isArray(newMiddlewares)) {
 					throw Error("Please pass a middleware.");
 				}
@@ -27,7 +27,7 @@ export const Store = function(nodes, rootMiddlewares = [], initialState = {}) {
 					middlewares.concat(newMiddlewares) :
 					middlewares.concat([newMiddlewares]);
 			},
-			unapplyMiddleware(middlewaresToBeRemoved) {
+			unapplyMiddlewares(middlewaresToBeRemoved) {
 				if (!isArray(middlewaresToBeRemoved)) {
 					throw Error("Please pass a middleware.");
 				}

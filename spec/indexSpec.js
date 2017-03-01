@@ -163,7 +163,7 @@ describe("Store", () => {
 
 	describe("removeNode", () => {
 		beforeEach(() => {
-			store.applyMiddleware(["todo", mid1]);
+			store.applyMiddlewares(["todo", mid1]);
 			store.removeNode("todo");
 		});
 
@@ -207,9 +207,9 @@ describe("Store", () => {
 		});
 	});
 
-	describe("applyMiddleware", () => {
+	describe("applyMiddlewares", () => {
 		it("applies a middleware", () => {
-			store.applyMiddleware(["user", mid1]);
+			store.applyMiddlewares(["user", mid1]);
 
 			let middlewares = store.getMiddlewares();
 			expect(middlewares.length).to.equal(3);
@@ -217,7 +217,7 @@ describe("Store", () => {
 		});
 
 		it("applies multiple middlewares.", () => {
-			store.applyMiddleware([
+			store.applyMiddlewares([
 				["user", mid1],
 				["todo", mid2]
 			]);
@@ -229,21 +229,21 @@ describe("Store", () => {
 		});
 
 		it("throws on invalid middlewares", () => {
-			expect(store.applyMiddleware.bind(store)).to.throw;
-			expect(store.applyMiddleware.bind(store, "invalidMiddleware")).to.throw;
+			expect(store.applyMiddlewares.bind(store)).to.throw;
+			expect(store.applyMiddlewares.bind(store, "invalidMiddleware")).to.throw;
 		});
 
 		it("throws on duplication");
 	});
 
-	describe("unapplyMiddleware", () => {
+	describe("unapplyMiddlewares", () => {
 		it("throws on invaid middlewares", () => {
-			expect(store.unapplyMiddleware.bind(store)).to.throw;
-			expect(store.unapplyMiddleware.bind(store, "invalidMiddleware")).to.throw;
+			expect(store.unapplyMiddlewares.bind(store)).to.throw;
+			expect(store.unapplyMiddlewares.bind(store, "invalidMiddleware")).to.throw;
 		});
 
 		it("unapplies single middleware", () => {
-			store.unapplyMiddleware(["", mid1]);
+			store.unapplyMiddlewares(["", mid1]);
 
 			let middlewares = store.getMiddlewares();
 			expect(middlewares.length).to.equal(1);
@@ -251,7 +251,7 @@ describe("Store", () => {
 		});
 
 		it("unapplies multiple middlewares", () => {
-			store.unapplyMiddleware([
+			store.unapplyMiddlewares([
 				["", mid1],
 				["", mid2]
 			]);
