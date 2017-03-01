@@ -19,10 +19,10 @@ let logger = (next, store, path) => {
 }
 
 describe("Store", () => {
-	let store, actions, mid1, mid1Log, mid2, mid2Log;
+	let store, nodes, mid1, mid1Log, mid2, mid2Log;
 
 	beforeEach(() => {
-		actions = {
+		nodes = {
 			user: {
 				list: [],
 				add(user) {
@@ -52,10 +52,10 @@ describe("Store", () => {
 			}
 		}
 
-		store = new Store(actions, [mid1, mid2]);
+		store = new Store(nodes, [mid1, mid2]);
 	});
 
-	it("actions are accessibale", () => {
+	it("handlers are accessibale", () => {
 		store.user.add("user 1");
 		store.todo.add("task 1");
 
@@ -63,7 +63,7 @@ describe("Store", () => {
 		expect(store.todo.tasks.length).to.equal(1);
 	});
 
-	it("actions are wrapped with middlewares", () => {
+	it("handlers are wrapped with middlewares", () => {
 		store.user.add("user 1");
 
 		expect(mid1Log.length).to.equal(4);
@@ -82,7 +82,7 @@ describe("Store", () => {
 	it("works with class based handlers");
 
 	it("middlewares are applied at particular path", () => {
-		let store = new Store(actions, [mid1, ["user.add", mid2]]);
+		let store = new Store(nodes, [mid1, ["user.add", mid2]]);
 
 		store.user.add("user 1");
 		expect(mid1Log.length).to.equal(4);
@@ -96,7 +96,7 @@ describe("Store", () => {
 	});
 
 	it("applies initial state", () => {
-		let actions = {
+		let nodes = {
 			todo: {
 				list: [],
 				add(task) {
@@ -111,7 +111,7 @@ describe("Store", () => {
 			}
 		}
 
-		let store = new Store(actions, [], initialState);
+		let store = new Store(nodes, [], initialState);
 
 		expect(store.todo.list).to.eql(["task 1"]);
 		expect(store.todo.allResolved).to.equal(false);
@@ -140,7 +140,7 @@ describe("Store", () => {
 			expect(notification.list).to.eql(["notification 1"]);
 		});
 
-		it("wraps actions with middlewares", () => {
+		it("wraps handlers with middlewares", () => {
 			notification.add("notification 1");
 
 			expect(mid1Log[3]).to.equal("notification 1");

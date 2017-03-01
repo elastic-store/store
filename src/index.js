@@ -6,7 +6,7 @@ function isArray(data) {
 	return Array.isArray(data);
 }
 
-export const Store = function(actions, rootMiddlewares = [], initialState = {}) {
+export const Store = function(nodes, rootMiddlewares = [], initialState = {}) {
 	let middlewares = rootMiddlewares.map((middleware) => {
 		if (typeof middleware === "function") {
 			return ["", middleware];
@@ -45,8 +45,8 @@ export const Store = function(actions, rootMiddlewares = [], initialState = {}) 
 			getMiddlewares() {
 				return middlewares;
 			},
-			addNode(nodeName, actions) {
-				newStore[nodeName] = wrapActions({}, actions, [nodeName]);
+			addNode(nodeName, nodes) {
+				newStore[nodeName] = wrapNodes({}, nodes, [nodeName]);
 				return newStore[nodeName];
 			},
 			addNodes(nodes) {
@@ -72,7 +72,7 @@ export const Store = function(actions, rootMiddlewares = [], initialState = {}) 
 			}
 		});
 
-	function wrapActions(destination, target, pathFrags = []) {
+	function wrapNodes(destination, target, pathFrags = []) {
 		for (let prop in target) {
 			if (target.hasOwnProperty(prop)) {
 
@@ -81,7 +81,7 @@ export const Store = function(actions, rootMiddlewares = [], initialState = {}) 
 
 				if (isObject(property)) {
 					destination[prop] =
-						wrapActions(destination[prop] || {}, property, pathFrags);
+						wrapNodes(destination[prop] || {}, property, pathFrags);
 				} else if (typeof property === "function") {
 					let pathStr = [].concat(pathFrags).join(".");
 
@@ -105,5 +105,5 @@ export const Store = function(actions, rootMiddlewares = [], initialState = {}) 
 		return destination;
 	};
 
-	return wrapActions(newStore, actions);
+	return wrapNodes(newStore, nodes);
 };
